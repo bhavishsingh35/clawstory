@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Order Success</title>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+
+<div class="bg-white p-10 rounded shadow text-center">
+  <h2 class="text-3xl font-bold text-green-600 mb-4">Order Placed ✔</h2>
+  <p class="text-gray-700">Order ID: <b>#{{ order.id }}</b></p>
+  <p class="mt-2">Payment Method: <b>{{ order.payment_method }}</b></p>
+  <p class="mt-2">Total: ₹{{ order.total }}</p>
+
+  <a href="{% url 'orders:my_orders' %}" class="inline-block mt-6 text-blue-600 underline">
+    View My Orders
+  </a>
+</div>
+
+</body>
+</html>

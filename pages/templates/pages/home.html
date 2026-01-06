@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Home | The Claw Story{% endblock %}
+
+{% block content %}
+    <section class="min-h-[80vh] flex items-center justify-center bg-gray-50">
+  <div class="text-center max-w-xl">
+    <h1 class="text-5xl font-bold text-gray-900 mb-4">
+      Minimal. Modern. Clothing.
+    </h1>
+    <p class="text-gray-600 mb-6">
+      Premium fashion curated for everyday wear.
+    </p>
+    <a href="#" class="inline-block px-6 py-3 bg-black text-white rounded hover:bg-gray-800 transition">
+      Shop Now
+    </a>
+  </div>
+</section>
+<section class="py-16 bg-white">
+  <div class="max-w-6xl mx-auto px-6">
+    <h2 class="text-3xl font-semibold mb-8 text-center">
+      Shop by Category
+    </h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="border p-10 text-center hover:shadow transition">
+        <h3 class="text-xl font-medium">Jeans</h3>
+      </div>
+      <div class="border p-10 text-center hover:shadow transition">
+        <h3 class="text-xl font-medium">Shirts</h3>
+      </div>
+      <div class="border p-10 text-center hover:shadow transition">
+        <h3 class="text-xl font-medium">T-Shirts</h3>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="py-16 bg-gray-50">
+  <div class="max-w-6xl mx-auto px-6">
+    <h2 class="text-3xl font-semibold mb-8 text-center">
+      Featured Products
+    </h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+      <div class="border p-4 bg-white">
+        <div class="h-40 bg-gray-200 mb-4"></div>
+        <h3 class="font-medium">Blue Jeans</h3>
+        <p class="text-gray-600">₹1000</p>
+      </div>
+
+      <div class="border p-4 bg-white">
+        <div class="h-40 bg-gray-200 mb-4"></div>
+        <h3 class="font-medium">White Shirt</h3>
+        <p class="text-gray-600">₹800</p>
+      </div>
+
+      <div class="border p-4 bg-white">
+        <div class="h-40 bg-gray-200 mb-4"></div>
+        <h3 class="font-medium">Black Tee</h3>
+        <p class="text-gray-600">₹600</p>
+      </div>
+
+      <div class="border p-4 bg-white">
+        <div class="h-40 bg-gray-200 mb-4"></div>
+        <h3 class="font-medium">Denim Jacket</h3>
+        <p class="text-gray-600">₹1800</p>
+      </div>
+    </div>
+  </div>
+</section>
+<footer class="py-8 bg-black text-white text-center">
+  <p class="text-sm">
+    © 2025 The Claw Story. All rights reserved.
+  </p>
+</footer>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-10">
+    <h1 class="text-3xl font-bold mb-8 text-center">Your Cart</h1>
+
+    {% if cart_items %}
+        <div class="space-y-6">
+            {% for item in cart_items %}
+            <div class="flex justify-between items-center border-b py-4">
+    <div>
+        <p class="font-semibold">{{ item.product.name }}</p>
+        <p class="text-gray-500">₹{{ item.product.price }}</p>
+    </div>
+
+    <form 
+        action="{% url 'cart:cart_update' item.product.id %}" 
+        method="post"
+        class="flex items-center gap-2"
+    >
+        {% csrf_token %}
+        <input
+            type="number"
+            name="qty"
+            value="{{ item.quantity }}"
+            min="0"
+            class="w-16 border rounded px-2 py-1"
+        >
+        <button
+            type="submit"
+            class="bg-black text-white px-3 py-1 rounded hover:bg-gray-800"
+        >
+            Update
+        </button>
+    </form>
+
+    <a
+        href="{% url 'cart:cart_remove' item.product.id %}"
+        class="text-red-600 text-sm"
+    >
+        Remove
+    </a>
+
+    <p class="font-bold">₹{{ item.subtotal }}</p>
+</div>
+            {% endfor %}
+        </div>
+
+        <div class="mt-8 flex justify-between items-center border-t pt-6">
+            <p class="text-xl font-bold">Total</p>
+            <p class="text-xl font-bold">₹{{ total }}</p>
+        </div>
+
+        <div class="mt-8 text-right">
+  <a href="{% url 'orders:create_order' %}"
+   class="inline-block bg-black text-white px-6 py-3 rounded">
+   Place Order
+</a>
+        </div>
+    {% else %}
+        <p class="text-center text-gray-500 text-lg">
+            Your cart is empty.
+        </p>
+    {% endif %}
+</div>
+{% endblock %}
