@@ -27,7 +27,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "unsafe-secret")
 DEBUG = os.environ.get("DEBUG") == "True"
 
 ALLOWED_HOSTS = ["*"]
-
+#comment
 CSRF_TRUSTED_ORIGINS = os.environ.get(
     "CSRF_TRUSTED_ORIGINS", ""
 ).split(",")
