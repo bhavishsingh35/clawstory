@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<head>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>My Orders</title>
+</head>
+<body class="bg-gray-100 min-h-screen p-10">
+
+<h1 class="text-3xl font-bold mb-6">My Orders</h1>
+
+{% if orders %}
+  <div class="space-y-4">
+    {% for order in orders %}
+      <div class="bg-white p-5 rounded shadow">
+        <div class="flex justify-between">
+          <div>
+            <p class="font-semibold">Order #{{ order.id }}</p>
+            <p class="text-sm text-gray-500">{{ order.created_at }}</p>
+          </div>
+          <span class="px-3 py-1 text-sm rounded
+            {% if order.status == 'DELIVERED' %}bg-green-500 text-white
+            {% elif order.status == 'DISPATCHED' %}bg-blue-500 text-white
+            {% else %}bg-yellow-400 text-black{% endif %}">
+            {{ order.status }}
+          </span>
+        </div>
+
+        <ul class="mt-3 text-sm text-gray-700">
+          {% for item in order.items.all %}
+            <li>{{ item.product.name }} × {{ item.quantity }} — ₹{{ item.subtotal }}</li>
+          {% endfor %}
+        </ul>
+
+        <p class="mt-2 font-semibold">Total: ₹{{ order.total }}</p>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p>No orders yet.</p>
+{% endif %}
+
+</body>
+{% endblock %}

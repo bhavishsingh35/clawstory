@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Complete Payment</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+
+<div class="bg-white p-8 rounded shadow w-96 text-center"
+     data-seconds="{{ remaining_seconds|default:0 }}"
+     data-fail-url="{% url 'orders:payment_failed' order.id %}">
+
+  <h2 class="text-xl font-semibold mb-4">Complete Payment</h2>
+
+  <p class="mb-1">Order ID: {{ order.id }}</p>
+  <p class="mb-4 font-semibold">Amount: ₹{{ order.total }}</p>
+
+  <p class="text-red-600 mb-4">
+    Time left: <span id="timer">--:--</span>
+  </p>
+
+  <a id="payBtn"
+     href="{% url 'orders:payment_success' order.id %}"
+     class="block bg-green-600 text-white py-2 rounded mb-3">
+     Simulate Payment Success
+  </a>
+
+  <button id="expiredBtn"
+          class="hidden bg-gray-400 text-white py-2 rounded w-full cursor-not-allowed">
+    Payment Expired
+  </button>
+</div>
+
+<script>
+  const container = document.querySelector("[data-seconds]");
+  let seconds = parseInt(container.dataset.seconds);
+  const failUrl = container.dataset.failUrl;
+
+  function countdown() {
+    const timerEl = document.getElementById("timer");
+    const payBtn = document.getElementById("payBtn");
+    const expiredBtn = document.getElementById("expiredBtn");
+
+    if (seconds <= 0) {
+      payBtn.classList.add("hidden");
+      expiredBtn.classList.remove("hidden");
+      window.location.href = failUrl;
+      return;
+    }
+
+    let min = Math.floor(seconds / 60);
+    let sec = seconds % 60;
+    timerEl.innerText = min + ":" + (sec < 10 ? "0" : "") + sec;
+
+    seconds--;
+    setTimeout(countdown, 1000);
+  }
+
+  countdown();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,42 @@
+{% extends "auth_base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-white">
+  <div class="w-full max-w-md bg-white p-8 shadow rounded">
+
+    <h2 class="text-2xl font-bold text-center mb-6">Login</h2>
+
+   <form method="POST" class="max-w-md mx-auto mt-24">
+  {% csrf_token %}
+
+  {% for message in messages %}
+    <p class="text-red-600 mb-4">{{ message }}</p>
+  {% endfor %}
+
+  <label class="block mb-1">Username</label>
+  {{ form.username|add_class:"w-full border px-3 py-2 mb-4" }}
+
+  <label class="block mb-1">Password</label>
+  {{ form.password|add_class:"w-full border px-3 py-2 mb-4" }}
+
+  <div class="text-right">
+  <a
+    href="{% url 'accounts:forgot_password' %}"
+    class="text-sm text-gray-600 hover:underline"
+  >
+    Forgot your password?
+  </a>
+</div>
+
+  <button class="w-full bg-black text-white py-2">Login</button>
+
+  <p class="mt-4 text-center text-sm">
+    New here?
+    <a href="{% url 'accounts:signup' %}" class="underline">Create account</a>
+  </p>
+</form>
+
+  </div>
+</div>
+{% endblock %}

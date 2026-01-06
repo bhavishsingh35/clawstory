@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}The Claw Story{% endblock %}</title>
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white text-gray-900">
+
+    <!-- Navbar -->
+    <header class="border-b">
+        <div class="max-w-7xl mx-auto flex justify-between items-center p-4">
+            <h1 class="text-xl font-bold">THE CLAW STORY</h1>
+            <nav class="space-x-6">
+    {% if user.is_authenticated %}
+    <p>Hello, {{ user.username }}</p>
+     <form method="post" action="{% url 'accounts:logout' %}">
+    {% csrf_token %}
+    <button type="submit"
+        class="text-black-600 hover:underline">
+        Logout
+    </button>
+</form>
+    {% else %}
+    <a href="{% url 'accounts:login' %}">Login</a>
+    <a href="{% url 'accounts:signup' %}">Sign Up</a>
+    {% endif %}
+    <a href="{% url 'pages:home' %}"
+       class="{% if request.path == '/' %}font-semibold{% endif %}">
+        Home
+    </a>
+
+    <a href="{% url 'pages:shop' %}"
+       class="{% if request.path == '/shop/' %}font-semibold{% endif %}">
+        Shop
+    </a>
+
+    <a href="{% url 'pages:collection_list' %}"
+       class="{% if request.path == '/collections/' %}font-semibold{% endif %}">
+        Collections
+    </a>
+
+    <a href="{% url 'cart:cart_detail' %}">
+    Cart ({{ request.session.cart|length|default:0 }})
+    </a>
+
+    <a href="{% url 'pages:contact' %}"
+       class="{% if request.path == '/contact/' %}font-semibold{% endif %}">
+        Contact
+    </a>
+    <a href="{% url 'orders:my_orders' %}" class="hover:underline">My Orders</a>
+</nav>
+        </div>
+    </header>
+
+    <!-- Page content -->
+    <main class="max-w-7xl mx-auto p-6">
+        {% block content %}{% endblock %}
+    </main>
+
+</body>
+</html>
