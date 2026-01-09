@@ -28,9 +28,9 @@ DEBUG = os.environ.get("DEBUG") == "True"
 
 ALLOWED_HOSTS = ["*"]
 #comment
-CSRF_TRUSTED_ORIGINS = os.environ.get(
-    "CSRF_TRUSTED_ORIGINS", ""
-).split(",")
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.railway.app",
+]
 
 
 # Application definition
