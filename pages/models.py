@@ -16,7 +16,7 @@ class Product(models.Model):
     slug = models.SlugField(unique=True)
     price = models.PositiveIntegerField()
     description = models.TextField(blank=True)
-    image = CloudinaryField('image')
+    image = CloudinaryField('image', blank=True, null=True)
     stock = models.PositiveIntegerField(default=0)   # REQUIRED
 
     def _str_(self):
