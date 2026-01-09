@@ -1,4 +1,5 @@
 from django.db import models
+from cloudinary.models import CloudinaryField
 
 
 class Collection(models.Model):
@@ -15,7 +16,7 @@ class Product(models.Model):
     slug = models.SlugField(unique=True)
     price = models.PositiveIntegerField()
     description = models.TextField(blank=True)
-    image = models.ImageField(upload_to="products/", blank=True, null=True)
+    image = CloudinaryField('image', blank=True, null=True)
     stock = models.PositiveIntegerField(default=0)   # REQUIRED
 
     def _str_(self):
