@@ -22,22 +22,26 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = os.environ.get(
+    "SECRET_KEY",
+    "django-insecure-local-dev-key-123456789"
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = os.environ.get("DEBUG") == "True"
 DEBUG=True
+print("Debug is on")
 # ALLOWED_HOSTS = os.environ.get(
 #     "ALLOWED_HOSTS", ""
 # ).split(",")
 
-ALLOWED_HOSTS=["*"]
+ALLOWED_HOSTS=[]
 #comment
 # CSRF_TRUSTED_ORIGINS = os.environ.get(
 #     "CSRF_TRUSTED_ORIGINS", ""
 # ).split(",")
 
-CSRF_TRUSTED_ORIGINS=["https://clawstory.onrender.com"]
+# CSRF_TRUSTED_ORIGINS=["https://clawstory.onrender.com"]
 
 
 # Application definition
@@ -138,6 +142,16 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+MEDIA_URL='/media/'
+MEDIA_ROOT=BASE_DIR / 'media'
+cloudinary.config(
+    cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.environ.get("CLOUDINARY_API_KEY"),
+    api_secret=os.environ.get("CLOUDINARY_API_SECRET"),
+)
+
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
 TEMPLATES[0]["DIRS"]=[BASE_DIR / "templates"]
 

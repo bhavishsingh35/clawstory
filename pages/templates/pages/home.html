@@ -1,76 +1,114 @@
 {% extends "base.html" %}
 
-{% block title %}Home | The Claw Story{% endblock %}
+{% block title %}Home | ClawStory{% endblock %}
 
 {% block content %}
-    <section class="min-h-[80vh] flex items-center justify-center bg-gray-50">
-  <div class="text-center max-w-xl">
-    <h1 class="text-5xl font-bold text-gray-900 mb-4">
-      Minimal. Modern. Clothing.
-    </h1>
-    <p class="text-gray-600 mb-6">
-      Premium fashion curated for everyday wear.
-    </p>
-    <a href="#" class="inline-block px-6 py-3 bg-black text-white rounded hover:bg-gray-800 transition">
-      Shop Now
+
+<!-- ================= HERO ================= -->
+<section class="bg-gradient-to-r from-gray-900 to-gray-800 text-white rounded-2xl p-8 md:p-12 mb-12">
+  <h1 class="text-3xl md:text-5xl font-extrabold mb-4">
+    Elevate Your Style
+  </h1>
+  <p class="text-gray-300 max-w-xl text-lg">
+    Premium collections curated for modern fashion.
+  </p>
+  <a href="{% url 'pages:shop' %}"
+     class="inline-block mt-6 bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-xl font-semibold transition">
+    Shop Now
+  </a>
+</section>
+
+<!-- ================= COLLECTIONS ================= -->
+{% if collections %}
+<section class="mb-14">
+  <h2 class="text-xl font-bold mb-4">Shop by Collection</h2>
+  <div class="flex gap-3 overflow-x-auto pb-2">
+    {% for collection in collections %}
+    <a href="{% url 'pages:collection_detail' collection.slug %}"
+       class="min-w-[180px] bg-white border rounded-xl p-4 text-center hover:shadow-md transition">
+      <h3 class="font-semibold">{{ collection.name }}</h3>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- ================= SEARCH INFO ================= -->
+{% if query %}
+<p class="mb-4 text-sm text-gray-600">
+  Showing results for "<strong>{{ query }}</strong>"
+</p>
+{% endif %}
+
+<!-- ================= PRODUCTS ================= -->
+<section>
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-xl font-bold">Latest Products</h2>
+    <a href="{% url 'pages:shop' %}" class="text-sm text-blue-600 hover:underline">
+      View all
     </a>
   </div>
-</section>
-<section class="py-16 bg-white">
-  <div class="max-w-6xl mx-auto px-6">
-    <h2 class="text-3xl font-semibold mb-8 text-center">
-      Shop by Category
-    </h2>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="border p-10 text-center hover:shadow transition">
-        <h3 class="text-xl font-medium">Jeans</h3>
-      </div>
-      <div class="border p-10 text-center hover:shadow transition">
-        <h3 class="text-xl font-medium">Shirts</h3>
-      </div>
-      <div class="border p-10 text-center hover:shadow transition">
-        <h3 class="text-xl font-medium">T-Shirts</h3>
-      </div>
+  {% if products %}
+  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+    {% for product in products %}
+   <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition overflow-hidden flex flex-col">
+
+  <!-- IMAGE -->
+  <a href="{% url 'pages:product_detail' product.slug %}">
+    <div class="w-full aspect-[4/5] bg-gray-100 flex items-center justify-center">
+      <img
+    src="{{ product.image.url }}"
+    alt="{{ product.name }}"
+    loading="lazy"
+    class="
+      w-full
+      h-full
+      object-cover
+      object-center
+      transition-transform
+      duration-300
+      hover:scale-105
+    "
+  />
     </div>
+  </a>
+
+  <!-- DETAILS -->
+  <div class="p-4 flex flex-col gap-1">
+    <h3 class="text-sm font-medium truncate">{{ product.name }}</h3>
+
+    <p class="text-lg font-bold text-gray-900">₹{{ product.price }}</p>
+
+    {% if product.stock > 0 %}
+      <span class="text-xs text-green-600">In stock</span>
+    {% else %}
+      <span class="text-xs text-red-500">Out of stock</span>
+    {% endif %}
+
+    <a
+      href="{% url 'pages:product_detail' product.slug %}"
+      class="mt-3 inline-block text-center bg-gray-900 text-white py-2 rounded-lg text-sm hover:bg-black transition"
+    >
+      View Product
+    </a>
   </div>
-</section>
-<section class="py-16 bg-gray-50">
-  <div class="max-w-6xl mx-auto px-6">
-    <h2 class="text-3xl font-semibold mb-8 text-center">
-      Featured Products
-    </h2>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-      <div class="border p-4 bg-white">
-        <div class="h-40 bg-gray-200 mb-4"></div>
-        <h3 class="font-medium">Blue Jeans</h3>
-        <p class="text-gray-600">₹1000</p>
-      </div>
-
-      <div class="border p-4 bg-white">
-        <div class="h-40 bg-gray-200 mb-4"></div>
-        <h3 class="font-medium">White Shirt</h3>
-        <p class="text-gray-600">₹800</p>
-      </div>
-
-      <div class="border p-4 bg-white">
-        <div class="h-40 bg-gray-200 mb-4"></div>
-        <h3 class="font-medium">Black Tee</h3>
-        <p class="text-gray-600">₹600</p>
-      </div>
-
-      <div class="border p-4 bg-white">
-        <div class="h-40 bg-gray-200 mb-4"></div>
-        <h3 class="font-medium">Denim Jacket</h3>
-        <p class="text-gray-600">₹1800</p>
-      </div>
+</div>
     </div>
+    {% endfor %}
   </div>
+  {% else %}
+    <p class="text-gray-500 mt-6">No products available.</p>
+  {% endif %}
 </section>
-<footer class="py-8 bg-black text-white text-center">
-  <p class="text-sm">
-    © 2025 The Claw Story. All rights reserved.
+
+<!-- ================= SEO TEXT ================= -->
+<section class="mt-16 text-sm text-gray-500">
+  <p>
+    ClawStory is your destination for premium fashion collections, modern designs,
+    and quality apparel curated for everyday wear.
   </p>
-</footer>
+</section>
+
 {% endblock %}
