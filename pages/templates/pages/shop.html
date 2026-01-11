@@ -1,49 +1,116 @@
 {% extends "base.html" %}
+{% block title %}Shop Online | ClawStory{% endblock %}
+
 {% block content %}
 
-<h1 class="text-2xl font-bold mb-6">Shop</h1>
+<!-- ================= PAGE HEADER ================= -->
+<header class="mb-6">
+  <h1 class="text-2xl md:text-3xl font-bold mb-2">Shop</h1>
+  <p class="text-gray-600 text-sm">
+    Discover premium clothing curated for everyday style.
+  </p>
+</header>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+<!-- ================= FILTER BAR (UI READY) ================= -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
 
-  {% for product in products %}
-<div class="border rounded-lg p-4 shadow-sm hover:shadow-lg transition flex flex-col">
+  <!-- Search hint -->
+  <p class="text-sm text-gray-500">
+    {{ products|length }} products available
+  </p>
 
-    <!-- CLICKABLE IMAGE + NAME -->
-    <a href="{% url 'pages:product_detail' product.slug %}">
-        {% if product.image %}
-            <img 
-                src="{{ product.image.url }}"
-                alt="{{ product.name }}"
-                class="w-full h-64 object-cover bg-gray-100 rounded mb-4"
-            >
-        {% else %}
-            <div class="w-full h-64 bg-gray-200 flex items-center justify-center rounded mb-4">
-                <span class="text-gray-500">No Image</span>
-            </div>
-        {% endif %}
+  <!-- Sorting (future ready) -->
+  <div class="flex gap-2 text-sm">
+    <span class="text-gray-500">Sort:</span>
+    <span class="font-medium">Newest</span>
+  </div>
+</div>
 
-        <h2 class="text-lg font-semibold mb-2">
-            {{ product.name }}
-        </h2>
-    </a>
+<!-- ================= PRODUCT GRID ================= -->
+{% if products %}
+<section
+  class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
+>
 
-    <p class="text-gray-700 mb-4">
-        ₹{{ product.price }}
+{% for product in products %}
+<article
+  class="bg-white border rounded-xl hover:shadow-lg transition flex flex-col"
+  itemscope
+  itemtype="https://schema.org/Product"
+>
+
+  <!-- IMAGE WRAPPER (NO CROP GUARANTEED) -->
+<a
+  href="{% url 'pages:product_detail' product.slug %}"
+  class="relative w-full bg-gray-50 overflow-hidden rounded-md"
+  style="height: 280px;"
+>
+<img
+        src="{{ product.image.url }}"
+        alt="{{ product.name }}"
+        loading="lazy"
+        class="w-full h-full object-contain transition-transform duration-300 hover:scale-105"
+      />
+</a>
+  <!-- PRODUCT INFO -->
+  <div class="p-3 flex flex-col flex-1">
+
+    <!-- Collection badge -->
+    <p class="text-xs text-gray-500 mb-1">
+      {{ product.collection.name }}
     </p>
 
-    <!-- Push button to bottom -->
-    <div class="mt-auto">
-        <a href="{% url 'cart:cart_add' product.id %}"
-           class="inline-block w-full text-center bg-black text-white py-2 rounded hover:bg-gray-800 transition">
-            Add to Cart
-        </a>
-    </div>
+    <!-- Name -->
+    <h2
+      class="text-sm font-medium leading-snug line-clamp-2"
+      itemprop="name"
+    >
+      {{ product.name }}
+    </h2>
 
-</div>
-    {% empty %}
-        <p>No products found.</p>
-    {% endfor %}
+    <!-- Price -->
+    <p
+      class="text-lg font-bold mt-1"
+      itemprop="offers"
+      itemscope
+      itemtype="https://schema.org/Offer"
+    >
+      ₹{{ product.price }}
+      <meta itemprop="priceCurrency" content="INR">
+      <meta itemprop="price" content="{{ product.price }}">
+    </p>
 
-</div>
+    <!-- Stock -->
+    {% if product.stock > 0 %}
+      <p class="text-xs text-green-600 mt-1">In stock</p>
+    {% else %}
+      <p class="text-xs text-red-500 mt-1">Out of stock</p>
+    {% endif %}
+
+    <!-- ACTION -->
+    <a
+      href="{% url 'pages:product_detail' product.slug %}"
+      class="mt-auto block text-center bg-gray-900 text-white py-2 rounded-lg text-sm hover:bg-gray-800 transition"
+    >
+      View Product
+    </a>
+
+  </div>
+</article>
+{% endfor %}
+
+</section>
+
+{% else %}
+<p class="text-gray-500">No products found.</p>
+{% endif %}
+
+<!-- ================= SEO TEXT ================= -->
+<section class="mt-14 text-sm text-gray-500 leading-relaxed">
+  <p>
+    Buy premium men’s clothing online at ClawStory. Explore curated collections
+    including shirts, jackets, pants, and more with fast delivery and secure checkout.
+  </p>
+</section>
 
 {% endblock %}
