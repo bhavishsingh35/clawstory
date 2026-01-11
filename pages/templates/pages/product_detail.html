@@ -1,50 +1,101 @@
 {% extends "base.html" %}
-{% block content %}
+{% block title %}{{ product.name }} | Buy Online at Best Price{% endblock %}
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+{% block content %}
+<section class="max-w-7xl mx-auto px-4 py-8">
+
+  <!-- Breadcrumb -->
+  <nav class="text-sm text-gray-500 mb-4">
+    <a href="{% url 'pages:home' %}" class="hover:underline">Home</a> /
+    <a href="{% url 'pages:collection_list' %}" class="hover:underline">Collections</a> /
+    <span class="text-gray-700">{{ product.name }}</span>
+  </nav>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
 
     <!-- IMAGE -->
-    <div>
+    <div class="flex justify-center">
+      <div class="w-[320px] sm:w-[380px] md:w-[420px] bg-gray-100 rounded-xl overflow-hidden">
         {% if product.image %}
-            <img 
-                src="{{ product.image.url }}"
-                class="w-full h-96 object-cover rounded"
-                alt="{{ product.name }}"
-            >
+        <img
+          src="{{ product.image.url }}"
+          alt="{{ product.name }}"
+          class="w-full h-auto object-contain"
+        >
         {% endif %}
+      </div>
     </div>
 
     <!-- DETAILS -->
-    <div>
-        <h1 class="text-2xl font-bold mb-4">{{ product.name }}</h1>
-        <p class="text-xl text-gray-700 mb-4">₹{{ product.price }}</p>
+    <div class="space-y-4">
 
-        {% if product.description %}
-            <p class="text-gray-600 mb-6">
-                {{ product.description }}
-            </p>
-        {% endif %}
+      <h1 class="text-3xl font-bold text-gray-900">
+        {{ product.name }}
+      </h1>
 
-        <!-- QUANTITY + ADD TO CART -->
-        <form action="{% url 'cart:cart_add' product.id %}" method="get">
-            <label class="block mb-2 font-semibold">Quantity</label>
+      <p class="text-2xl font-semibold text-gray-900">
+        ₹{{ product.price }}
+      </p>
 
-            <input 
-                type="number"
-                name="qty"
-                value="1"
-                min="1"
-                class="w-20 border rounded p-2 mb-4"
-            >
+      {% if product.stock > 0 %}
+        <p class="text-green-600 font-medium">
+          ✔ In Stock ({{ product.stock }} available)
+        </p>
+      {% else %}
+        <p class="text-red-600 font-medium">
+          ✖ Out of Stock
+        </p>
+      {% endif %}
 
-            <button 
-                type="submit"
-                class="block bg-black text-white px-6 py-3 rounded hover:bg-gray-800"
-            >
-                Add to Cart
-            </button>
-        </form>
+      {% if product.description %}
+      <p class="text-gray-700 leading-relaxed">
+        {{ product.description }}
+      </p>
+      {% endif %}
+
+      <!-- ADD TO CART -->
+      {% if product.stock > 0 %}
+      <form
+        method="get"
+        action="{% url 'cart:cart_add' product.id %}"
+        class="flex flex-col sm:flex-row gap-4 mt-4"
+      >
+        <div>
+          <label class="block text-sm font-medium mb-1">Quantity</label>
+          <input
+            type="number"
+            name="qty"
+            value="1"
+            min="1"
+            max="{{ product.stock }}"
+            class="w-24 border rounded-md px-3 py-2"
+          >
+        </div>
+
+        <button
+          type="submit"
+          class="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-3 rounded-lg font-semibold transition"
+        >
+          Add to Cart
+        </button>
+
+        <a
+          href="{% url 'cart:cart_detail' %}"
+          class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold transition text-center"
+        >
+          Buy Now
+        </a>
+      </form>
+      {% endif %}
+
+      <!-- TRUST -->
+      <div class="border-t pt-4 text-sm text-gray-600 space-y-1">
+        <p>🚚 Free delivery above ₹999</p>
+        <p>🔄 7-day replacement</p>
+        <p>🔒 Secure payments</p>
+      </div>
+
     </div>
-
-</div>
+  </div>
+</section>
 {% endblock %}

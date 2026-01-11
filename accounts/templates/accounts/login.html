@@ -1,42 +1,96 @@
-{% extends "auth_base.html" %}
-{% load widget_tweaks %}
+{% extends "base.html" %}
+{% block title %}Login | ClawStory{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center bg-white">
-  <div class="w-full max-w-md bg-white p-8 shadow rounded">
+<section class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
 
-    <h2 class="text-2xl font-bold text-center mb-6">Login</h2>
+  <div class="w-full max-w-md bg-white rounded-xl shadow-lg border p-6 sm:p-8">
 
-   <form method="POST" class="max-w-md mx-auto mt-24">
-  {% csrf_token %}
+    <!-- LOGO / BRAND -->
+    <div class="text-center mb-6">
+      <h1 class="text-2xl font-bold tracking-tight">Welcome Back</h1>
+      <p class="text-sm text-gray-500 mt-1">
+        Login to continue shopping on <span class="font-semibold">ClawStory</span>
+      </p>
+    </div>
 
-  {% for message in messages %}
-    <p class="text-red-600 mb-4">{{ message }}</p>
-  {% endfor %}
+    <!-- ERROR / INFO MESSAGES -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="mb-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
 
-  <label class="block mb-1">Username</label>
-  {{ form.username|add_class:"w-full border px-3 py-2 mb-4" }}
+    <!-- LOGIN FORM -->
+    <form method="post" class="space-y-4" novalidate>
+      {% csrf_token %}
 
-  <label class="block mb-1">Password</label>
-  {{ form.password|add_class:"w-full border px-3 py-2 mb-4" }}
+      <!-- USERNAME / EMAIL -->
+      <div>
+        <label class="block text-sm font-medium mb-1">Username or Email</label>
+        <input
+          type="text"
+          name="username"
+          required
+          autocomplete="username"
+          class="w-full rounded-md border px-3 py-2 focus:ring-2 focus:ring-black focus:outline-none"
+        >
+      </div>
 
-  <div class="text-right">
-  <a
-    href="{% url 'accounts:forgot_password' %}"
-    class="text-sm text-gray-600 hover:underline"
-  >
-    Forgot your password?
-  </a>
-</div>
+      <!-- PASSWORD -->
+      <div>
+        <label class="block text-sm font-medium mb-1">Password</label>
+        <input
+          type="password"
+          name="password"
+          required
+          autocomplete="current-password"
+          class="w-full rounded-md border px-3 py-2 focus:ring-2 focus:ring-black focus:outline-none"
+        >
+      </div>
 
-  <button class="w-full bg-black text-white py-2">Login</button>
+      <!-- FORGOT PASSWORD -->
+      <div class="text-right">
+        <a href="{% url 'accounts:forgot_password' %}" class="text-sm text-blue-600 hover:underline">
+          Forgot password?
+        </a>
+      </div>
 
-  <p class="mt-4 text-center text-sm">
-    New here?
-    <a href="{% url 'accounts:signup' %}" class="underline">Create account</a>
-  </p>
-</form>
+      <!-- SUBMIT -->
+      <button
+        type="submit"
+        class="w-full bg-black text-white py-2.5 rounded-md font-semibold hover:bg-gray-900 transition"
+      >
+        Login
+      </button>
+
+    </form>
+
+    <!-- DIVIDER -->
+    <div class="flex items-center my-6">
+      <div class="flex-1 h-px bg-gray-200"></div>
+      <span class="px-3 text-xs text-gray-400">NEW TO CLAWSTORY?</span>
+      <div class="flex-1 h-px bg-gray-200"></div>
+    </div>
+
+    <!-- SIGNUP -->
+    <a
+      href="{% url 'accounts:signup' %}"
+      class="block w-full text-center border py-2.5 rounded-md font-semibold hover:bg-gray-50 transition"
+    >
+      Create your account
+    </a>
+
+    <!-- TRUST -->
+    <p class="mt-6 text-xs text-gray-500 text-center leading-relaxed">
+      By continuing, you agree to ClawStory’s
+      <a href="#" class="underline">Terms</a> &
+      <a href="#" class="underline">Privacy Policy</a>.
+    </p>
 
   </div>
-</div>
+
+</section>
 {% endblock %}

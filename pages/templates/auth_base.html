@@ -1,12 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>{% block title %}{% endblock %}</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
+{% extends "base.html" %}
 
-<body class="h-screen overflow-hidden">
-  {% block content %}{% endblock %}
-</body>
-</html>
+{% block content %}
+<div class="min-h-[calc(100vh-120px)] flex items-center justify-center">
+  <div class="w-full max-w-md bg-white p-6 rounded-xl shadow-lg">
+    {% block auth_content %}{% endblock %}
+  </div>
+</div>
+{% endblock %}
