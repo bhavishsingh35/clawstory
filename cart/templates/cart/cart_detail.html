@@ -1,66 +1,139 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Your Cart</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
+{% extends "base.html" %}
+{% block title %}Shopping Cart | ClawStory{% endblock %}
 
-<body class="bg-gray-100 min-h-screen">
+{% block content %}
+<section class="max-w-6xl mx-auto px-4 py-10">
 
-<div class="max-w-6xl mx-auto px-6 py-10">
+  <!-- Page Heading -->
+  <h1 class="text-3xl font-bold mb-6">Shopping Cart</h1>
 
-    <!-- Page Title -->
-    <h1 class="text-3xl font-bold mb-8">Your Cart</h1>
+  {% if cart_items %}
 
-    {% if items %}
-    <div class="bg-white rounded-lg shadow overflow-hidden">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-        <!-- Table Header -->
-        <div class="grid grid-cols-5 gap-4 px-6 py-4 bg-gray-50 text-sm font-semibold text-gray-600">
-            <div class="col-span-2">Product</div>
-            <div>Price</div>
-            <div>Qty</div>
-            <div>Subtotal</div>
+    <!-- ================= CART ITEMS ================= -->
+    <div class="lg:col-span-2 space-y-4">
+
+      {% for item in cart_items %}
+      <div class="flex gap-4 p-4 border rounded-xl bg-white shadow-sm">
+
+        <!-- Product Image -->
+        <img
+          src="{{ item.product.image.url }}"
+          alt="{{ item.product.name }}"
+          class="w-28 h-28 object-contain bg-gray-100 rounded-lg"
+        >
+
+        <!-- Product Info -->
+        <div class="flex-1">
+
+          <h2 class="font-semibold text-lg text-gray-900">
+            {{ item.product.name }}
+          </h2>
+
+          <p class="text-gray-600 text-sm mt-1">
+            ₹{{ item.product.price }} each
+          </p>
+
+          <!-- Quantity Update -->
+          <form
+            method="post"
+            action="{% url 'cart:cart_update' item.product.id %}"
+            class="flex items-center gap-3 mt-3"
+          >
+            {% csrf_token %}
+            <input
+              type="number"
+              name="quantity"
+              value="{{ item.quantity }}"
+              min="1"
+              class="w-20 border rounded-md px-2 py-1"
+            >
+            <button
+              type="submit"
+              class="text-sm text-blue-600 hover:underline"
+            >
+              Update
+            </button>
+          </form>
+
+          <!-- Subtotal -->
+          <p class="font-semibold mt-3">
+            Subtotal: ₹{{ item.subtotal }}
+          </p>
+
+          <!-- Remove -->
+          <a
+            href="{% url 'cart:cart_remove' item.product.id %}"
+            class="inline-block text-red-600 text-sm mt-2 hover:underline"
+          >
+            Remove
+          </a>
+
         </div>
+      </div>
+      {% endfor %}
 
-        <!-- Cart Items -->
-        {% for item in items %}
-        <div class="grid grid-cols-5 gap-4 px-6 py-4 border-t items-center">
-            <div class="col-span-2 font-medium text-gray-800">
-                {{ item.product.name }}
-            </div>
-            <div>₹{{ item.product.price }}</div>
-            <div>{{ item.quantity }}</div>
-            <div class="font-semibold">₹{{ item.subtotal }}</div>
-        </div>
-        {% endfor %}
-
-        <!-- Cart Footer -->
-        <div class="flex justify-between items-center px-6 py-6 border-t bg-gray-50">
-            <p class="text-lg font-semibold">
-                Total: ₹{{ total }}
-            </p>
-
-            <a href="{% url 'orders:checkout' %}"
-               class="bg-black text-white px-6 py-3 rounded hover:bg-gray-800 transition">
-                Proceed to Checkout
-            </a>
-        </div>
     </div>
 
-    {% else %}
-    <!-- Empty Cart -->
-    <div class="bg-white p-10 rounded shadow text-center">
-        <p class="text-lg text-gray-600 mb-6">Your cart is empty.</p>
-        <a href="{% url 'pages:home' %}"
-           class="inline-block bg-black text-white px-6 py-3 rounded hover:bg-gray-800">
-            Continue Shopping
-        </a>
-    </div>
-    {% endif %}
+    <!-- ================= SUMMARY ================= -->
+    <aside class="bg-white p-6 rounded-xl shadow-sm h-fit sticky top-24">
 
-</div>
+      <h2 class="text-xl font-semibold mb-4">
+        Order Summary
+      </h2>
 
-</body>
-</html>
+      <div class="flex justify-between text-gray-700 mb-2">
+        <span>Items</span>
+        <span>{{ cart_items|length }}</span>
+      </div>
+
+      <div class="flex justify-between text-gray-700 mb-2">
+        <span>Delivery</span>
+        <span class="text-green-600">FREE</span>
+      </div>
+
+      <hr class="my-3">
+
+      <div class="flex justify-between text-lg font-bold">
+        <span>Total</span>
+        <span>₹{{ total }}</span>
+      </div>
+
+      <a
+        href="{% url 'orders:checkout' %}"
+        class="block mt-6 bg-black text-white text-center py-3 rounded-lg font-semibold hover:bg-gray-800 transition"
+      >
+        Proceed to Checkout
+      </a>
+
+      <!-- Trust -->
+      <div class="text-sm text-gray-500 mt-4 space-y-1">
+        <p>🔒 Secure payments</p>
+        <p>🚚 Fast delivery</p>
+        <p>🔄 Easy returns</p>
+      </div>
+
+    </aside>
+
+  </div>
+
+  {% else %}
+
+  <!-- EMPTY CART -->
+  <div class="text-center py-20">
+    <p class="text-gray-600 text-lg mb-6">
+      Your cart is empty.
+    </p>
+    <a
+      href="{% url 'pages:shop' %}"
+      class="inline-block bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition"
+    >
+      Continue Shopping
+    </a>
+  </div>
+
+  {% endif %}
+
+</section>
+{% endblock %}

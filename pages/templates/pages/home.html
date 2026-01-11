@@ -52,28 +52,20 @@
   {% if products %}
   <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
     {% for product in products %}
-   <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition overflow-hidden flex flex-col">
+    
+   <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition flex flex-col w-full max-w-full">
 
   <!-- IMAGE -->
-  <a href="{% url 'pages:product_detail' product.slug %}">
-    <div class="w-full aspect-[4/5] bg-gray-100 flex items-center justify-center">
-      <img
-    src="{{ product.image.url }}"
-    alt="{{ product.name }}"
-    loading="lazy"
-    class="
-      w-full
-      h-full
-      object-cover
-      object-center
-      transition-transform
-      duration-300
-      hover:scale-105
-    "
-  />
-    </div>
-  </a>
-
+<a href="{% url 'pages:product_detail' product.slug %}" class="block">
+  <div class="relative w-full aspect-square bg-gray-100 overflow-hidden">
+    <img
+      src="{{ product.image.url }}"
+      alt="{{ product.name }}"
+      loading="lazy"
+      class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+    >
+  </div>
+</a>
   <!-- DETAILS -->
   <div class="p-4 flex flex-col gap-1">
     <h3 class="text-sm font-medium truncate">{{ product.name }}</h3>
