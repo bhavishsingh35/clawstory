@@ -33,9 +33,11 @@ DEBUG=True
 
 ALLOWED_HOSTS=["*"]
 #comment
-CSRF_TRUSTED_ORIGINS = os.environ.get(
-    "CSRF_TRUSTED_ORIGINS", ""
-).split(",")
+# CSRF_TRUSTED_ORIGINS = os.environ.get(
+#     "CSRF_TRUSTED_ORIGINS", ""
+# ).split(",")
+
+CSRF_TRUSTED_ORIGINS=["https://clawstory.onrender.com"]
 
 
 # Application definition
