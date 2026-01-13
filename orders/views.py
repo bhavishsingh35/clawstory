@@ -7,12 +7,40 @@ from .models import Order, OrderItem
 from pages.models import Product
 
 
+ORDER_STEPS = [
+    "PLACED",
+    "CONFIRMED",
+    "PACKED",
+    "DISPATCHED",
+    "OUT_FOR_DELIVERY",
+    "DELIVERED",
+]
+
+
 @login_required
 def checkout(request):
     cart = request.session.get("cart", {})
     if not cart:
-        return redirect("cart:cart_detail")  # your existing cart page
-    return render(request, "orders/checkout.html")
+        return redirect("cart:cart_detail")
+
+    items = []
+    total = 0
+
+    for product_id, qty in cart.items():
+        product = get_object_or_404(Product, id=product_id)
+        line_total = product.price * qty
+        total += line_total
+
+        items.append({
+            "product": product,
+            "quantity": qty,
+            "line_total": line_total,
+        })
+
+    return render(request, "orders/checkout.html", {
+        "cart_items": items,
+        "cart_total": total,
+    })
 
 
 @login_required
@@ -26,24 +54,25 @@ def create_order(request):
     if not payment_method or not cart:
         return redirect("orders:checkout")
 
-    # calculate total
     total = 0
+    products_cache = {}
+
     for product_id, qty in cart.items():
-        product = Product.objects.get(id=product_id)
+        product = get_object_or_404(Product, id=product_id)
+        products_cache[product_id] = product
         total += product.price * qty
 
-    # create order
     order = Order.objects.create(
         user=request.user,
         total=total,
         payment_method=payment_method,
         payment_status="PENDING",
-        status="PLACED"
+        status="PLACED",
+        payment_expires_at=timezone.now() + timedelta(minutes=10)
     )
 
-    # create order items
     for product_id, qty in cart.items():
-        product = Product.objects.get(id=product_id)
+        product = products_cache[product_id]
         OrderItem.objects.create(
             order=order,
             product=product,
@@ -51,19 +80,35 @@ def create_order(request):
             price=product.price
         )
 
-    # COD → instant success
     if payment_method == "COD":
         order.payment_status = "SUCCESS"
         order.status = "CONFIRMED"
         order.save()
         request.session["cart"] = {}
-        return redirect("orders:order_success", order_id=order.id)
+        return redirect("orders:order_success", order.id)
 
-    # ONLINE PAYMENT → start 10 min timer
-    order.payment_expires_at = timezone.now() + timedelta(minutes=10)
-    order.save()
+    return redirect("orders:payment", order.id)
 
-    return redirect("orders:payment", order_id=order.id)
+
+@login_required
+def my_orders(request):
+    orders = Order.objects.filter(user=request.user).order_by("-created_at")
+
+    orders_data = []
+    for order in orders:
+        current_step = (
+            ORDER_STEPS.index(order.status)
+            if order.status in ORDER_STEPS else -1
+        )
+        orders_data.append({
+            "order": order,
+            "current_step": current_step,
+        })
+
+    return render(request, "orders/my_orders.html", {
+        "orders_data": orders_data,
+        "ORDER_STEPS": ORDER_STEPS,
+    })
 
 
 @login_required
@@ -71,12 +116,12 @@ def payment_page(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
 
     if order.payment_status != "PENDING":
-        return redirect("orders:order_success", order_id=order.id)
+        return redirect("orders:order_success", order.id)
 
-    if timezone.now() > order.payment_expires_at:
+    if order.is_payment_expired():
         order.payment_status = "FAILED"
         order.save()
-        return redirect("orders:payment_failed", order_id=order.id)
+        return redirect("orders:payment_failed", order.id)
 
     remaining_seconds = int(
         (order.payment_expires_at - timezone.now()).total_seconds()
@@ -92,17 +137,17 @@ def payment_page(request, order_id):
 def payment_success(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
 
-    if timezone.now() > order.payment_expires_at:
+    if order.is_payment_expired():
         order.payment_status = "FAILED"
         order.save()
-        return redirect("orders:payment_failed", order_id=order.id)
+        return redirect("orders:payment_failed", order.id)
 
     order.payment_status = "SUCCESS"
     order.status = "CONFIRMED"
     order.save()
 
     request.session["cart"] = {}
-    return redirect("orders:order_success", order_id=order.id)
+    return redirect("orders:order_success", order.id)
 
 
 @login_required
@@ -115,9 +160,3 @@ def payment_failed(request, order_id):
 def order_success(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     return render(request, "orders/order_success.html", {"order": order})
-
-
-@login_required
-def my_orders(request):
-    orders = Order.objects.filter(user=request.user).order_by("-created_at")
-    return render(request, "orders/my_orders.html", {"orders": orders})

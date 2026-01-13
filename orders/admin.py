@@ -5,6 +5,7 @@ from .models import Order, OrderItem
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 0
+    readonly_fields = ("subtotal",)
 
 
 @admin.register(Order)
@@ -27,9 +28,7 @@ class OrderAdmin(admin.ModelAdmin):
     )
 
     search_fields = ("id", "user_username", "user_email")
-
     readonly_fields = ("created_at",)
-
     inlines = [OrderItemInline]
 
 

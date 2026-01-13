@@ -40,18 +40,16 @@
 >
 
   <!-- IMAGE WRAPPER (NO CROP GUARANTEED) -->
-<a
-  href="{% url 'pages:product_detail' product.slug %}"
-  class="relative w-full bg-gray-50 overflow-hidden rounded-md"
-  style="height: 280px;"
->
-<img
-      src="{{ product.image.url }}"
-      alt="{{ product.name }}"
-      loading="lazy"
-      class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-    />
-</a>
+ <a href="{% url 'pages:product_detail' product.slug %}">
+      <div class="relative w-full aspect-[1/1] bg-gray-100 overflow-hidden">
+  <img
+    src="{{ product.image.url }}"
+    alt="{{ product.name }}"
+    loading="lazy"
+    class="absolute inset-0 w-full h-full object-cover"
+  />
+</div>
+    </a>
   <!-- PRODUCT INFO -->
   <div class="p-3 flex flex-col flex-1">
 

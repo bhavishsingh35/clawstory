@@ -18,14 +18,14 @@
    class="group bg-white rounded-xl shadow-sm hover:shadow-xl transition overflow-hidden flex flex-col">
 
   <!-- IMAGE -->
-  <div class="w-full aspect-[16/9] bg-gray-100 overflow-hidden">
-    <img
-      src="{{ collection.image.url }}"
-      alt="{{ collection.name }}"
-      loading="lazy"
-      class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-    />
-  </div>
+   <div class="relative w-full aspect-[1/1] bg-gray-100 overflow-hidden">
+  <img
+    src="{{ collection.image.url }}"
+    alt="{{ collection.name }}"
+    loading="lazy"
+    class="absolute inset-0 w-full h-full object-cover"
+  />
+</div>
 
   <!-- CONTENT -->
   <div class="p-4">

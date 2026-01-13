@@ -1,38 +1,189 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Order #{{ order.id }}</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
+{% extends "base.html" %}
+{% block title %}Order #{{ order.id }} | ClawStory{% endblock %}
 
-<body class="bg-gray-100 min-h-screen">
-<div class="max-w-4xl mx-auto py-10">
+{% block content %}
 
-<h1 class="text-2xl font-bold mb-6">Order #{{ order.id }}</h1>
+<!-- SEO -->
+<meta name="description" content="Track your ClawStory order, view items, payment details, and delivery status.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- Status Timeline -->
-<div class="bg-white p-6 rounded shadow mt-6">
-  <h2 class="text-lg font-semibold mb-4">Order Status</h2>
+<div class="max-w-6xl mx-auto px-4 py-10">
 
-  <div class="flex justify-between items-center">
-    {% for step in order_steps %}
-      <div class="flex-1 text-center">
-        <div
-          class="w-8 h-8 mx-auto rounded-full
-          {% if order.status == step or order.status == 'DELIVERED' %}
+  <!-- HEADER -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-extrabold tracking-tight">
+      Order #{{ order.id }}
+    </h1>
+    <p class="text-sm text-gray-500 mt-1">
+      Placed on {{ order.created_at|date:"d M Y, h:i A" }}
+    </p>
+  </div>
+
+  <!-- ================= STATUS TIMELINE ================= -->
+  <div class="bg-white rounded-2xl shadow p-6 mb-8">
+
+    <h2 class="text-lg font-semibold mb-6">Order Status</h2>
+
+    <div class="flex items-center justify-between">
+
+      {% for step in ORDER_STEPS %}
+      <div class="flex-1 text-center relative">
+
+        <!-- LINE -->
+        {% if not forloop.first %}
+        <div class="absolute top-4 left-0 w-full h-0.5
+          {% if forloop.counter0 <= current_step %}
             bg-green-500
           {% else %}
             bg-gray-300
-          {% endif %}">
+          {% endif %}
+        "></div>
+        {% endif %}
+
+        <!-- DOT -->
+        <div class="relative z-10 mx-auto w-8 h-8 rounded-full flex items-center justify-center
+          {% if forloop.counter0 <= current_step %}
+            bg-green-500 text-white
+          {% else %}
+            bg-gray-300 text-gray-600
+          {% endif %}
+        ">
+          ✓
         </div>
 
-        <p class="mt-2 text-sm font-medium text-gray-700">
-          {{ step|title }}
+        <!-- LABEL -->
+        <p class="mt-3 text-xs font-medium uppercase tracking-wide text-gray-700">
+          {{ step|cut:"_" }}
+        </p>
+
+      </div>
+      {% endfor %}
+
+    </div>
+  </div>
+
+  <!-- ================= MAIN GRID ================= -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+    <!-- ================= LEFT : ITEMS ================= -->
+    <div class="md:col-span-2 bg-white rounded-2xl shadow p-6">
+
+      <h2 class="text-lg font-semibold mb-4">Items in this order</h2>
+
+      <ul class="divide-y">
+        {% for item in order.items.all %}
+        <li class="py-4 flex items-center gap-4">
+
+          <!-- IMAGE (safe even if missing later) -->
+          <div class="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
+            {% if item.product.image %}
+            <img src="{{ item.product.image.url }}" class="w-full h-full object-cover">
+            {% endif %}
+          </div>
+
+          <!-- INFO -->
+          <div class="flex-1">
+            <p class="font-medium">{{ item.product.name }}</p>
+            <p class="text-sm text-gray-500">
+              Quantity: {{ item.quantity }}
+            </p>
+          </div>
+
+          <!-- PRICE -->
+          <div class="font-semibold">
+            ₹{{ item.price|floatformat:2 }}
+          </div>
+
+        </li>
+        {% endfor %}
+      </ul>
+
+    </div>
+
+    <!-- ================= RIGHT : SUMMARY ================= -->
+    <div class="bg-white rounded-2xl shadow p-6 h-fit sticky top-6">
+
+      <h2 class="text-lg font-semibold mb-4">Order Summary</h2>
+
+      <div class="flex justify-between text-sm mb-2">
+        <span>Subtotal</span>
+        <span>₹{{ order.total|floatformat:2 }}</span>
+      </div>
+
+      <div class="flex justify-between text-sm mb-2">
+        <span>Delivery</span>
+        <span class="text-green-600">FREE</span>
+      </div>
+
+      <hr class="my-3">
+
+      <div class="flex justify-between text-lg font-bold">
+        <span>Total</span>
+        <span>₹{{ order.total|floatformat:2 }}</span>
+      </div>
+
+      <hr class="my-4">
+
+      <div class="text-sm space-y-2">
+        <p>
+          <span class="text-gray-500">Payment Method:</span>
+          <span class="font-medium">{{ order.payment_method }}</span>
+        </p>
+
+        <p>
+          <span class="text-gray-500">Payment Status:</span>
+          <span class="font-medium
+            {% if order.payment_status == 'SUCCESS' %}text-green-600
+            {% elif order.payment_status == 'FAILED' %}text-red-600
+            {% else %}text-yellow-600{% endif %}
+          ">
+            {{ order.payment_status }}
+          </span>
+        </p>
+
+        <p>
+          <span class="text-gray-500">Order Status:</span>
+          <span class="font-medium">{{ order.status }}</span>
         </p>
       </div>
-    {% endfor %}
+
+      <!-- TRUST -->
+      <div class="mt-6 text-xs text-gray-500 space-y-2">
+        <p>🔒 Secure payments</p>
+        <p>📦 Reliable delivery</p>
+        <p>↩ Easy returns</p>
+      </div>
+
+    </div>
+
   </div>
+
+  <!-- ================= ACTIONS ================= -->
+  <div class="mt-10 flex flex-wrap gap-4">
+
+    {% if order.status not in "DELIVERED,CANCELLED" %}
+    <button class="px-6 py-3 bg-red-100 text-red-600 rounded-xl hover:bg-red-200 transition">
+      Cancel Order
+    </button>
+    {% endif %}
+
+    {% if order.status == "DELIVERED" %}
+    <button class="px-6 py-3 bg-gray-100 rounded-xl hover:bg-gray-200 transition">
+      Return Item
+    </button>
+    {% endif %}
+
+    <button class="px-6 py-3 bg-gray-100 rounded-xl hover:bg-gray-200 transition">
+      Download Invoice
+    </button>
+
+    <a href="{% url 'orders:my_orders' %}"
+       class="px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition">
+      Back to Orders
+    </a>
+
+  </div>
+
 </div>
-</div>
-</body>
-</html>
+
+{% endblock %}

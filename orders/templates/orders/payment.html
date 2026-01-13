@@ -1,49 +1,92 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Complete Payment</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
+{% extends "base.html" %}
+{% block title %}Complete Payment | ClawStory{% endblock %}
 
-<body class="bg-gray-100 flex items-center justify-center h-screen">
+{% block content %}
 
-<div class="bg-white p-8 rounded shadow w-96 text-center"
-     data-seconds="{{ remaining_seconds|default:0 }}"
-     data-fail-url="{% url 'orders:payment_failed' order.id %}">
+<!-- SEO -->
+<meta name="description" content="Secure payment for your ClawStory order. Complete payment before session expires.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <h2 class="text-xl font-semibold mb-4">Complete Payment</h2>
+<div class="min-h-[80vh] flex items-center justify-center bg-gray-100 px-4">
 
-  <p class="mb-1">Order ID: {{ order.id }}</p>
-  <p class="mb-4 font-semibold">Amount: ₹{{ order.total }}</p>
+  <div
+    class="w-full max-w-lg bg-white rounded-3xl shadow-xl p-8 text-center"
+    data-seconds="{{ remaining_seconds|default:0 }}"
+    data-fail-url="{% url 'orders:payment_failed' order.id %}"
+  >
 
-  <p class="text-red-600 mb-4">
-    Time left: <span id="timer">--:--</span>
-  </p>
+    <!-- HEADER -->
+    <h1 class="text-2xl font-extrabold mb-1">Complete Payment</h1>
+    <p class="text-sm text-gray-500 mb-6">
+      Secure transaction • Session expires soon
+    </p>
 
-  <a id="payBtn"
-     href="{% url 'orders:payment_success' order.id %}"
-     class="block bg-green-600 text-white py-2 rounded mb-3">
-     Simulate Payment Success
-  </a>
+    <!-- ORDER INFO -->
+    <div class="bg-gray-50 rounded-2xl p-5 mb-6 text-left text-sm">
+      <div class="flex justify-between mb-2">
+        <span class="text-gray-500">Order ID</span>
+        <span class="font-semibold">#{{ order.id }}</span>
+      </div>
+      <div class="flex justify-between mb-2">
+        <span class="text-gray-500">Amount Payable</span>
+        <span class="font-semibold">₹{{ order.total }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Payment Method</span>
+        <span class="font-semibold">{{ order.payment_method }}</span>
+      </div>
+    </div>
 
-  <button id="expiredBtn"
-          class="hidden bg-gray-400 text-white py-2 rounded w-full cursor-not-allowed">
-    Payment Expired
-  </button>
+    <!-- TIMER -->
+    <div class="mb-6">
+      <p class="text-sm text-gray-600 mb-1">Time remaining</p>
+      <p id="timer" class="text-2xl font-bold text-red-600">--:--</p>
+    </div>
+
+    <!-- PAYMENT ACTIONS -->
+    <div class="space-y-3">
+
+      <!-- ✅ DUMMY SUCCESS (replace with Razorpay later) -->
+      <a
+        id="payBtn"
+        href="{% url 'orders:payment_success' order.id %}"
+        class="block w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition"
+      >
+        Pay Now (Dummy)
+      </a>
+
+      <!-- EXPIRED STATE -->
+      <button
+        id="expiredBtn"
+        class="hidden w-full bg-gray-400 text-white py-3 rounded-xl font-semibold cursor-not-allowed"
+      >
+        Payment Session Expired
+      </button>
+
+    </div>
+
+    <!-- TRUST -->
+    <div class="mt-6 text-xs text-gray-500 space-y-1">
+      <p>🔒 Secure & encrypted payment</p>
+      <p>💳 Powered by trusted gateways</p>
+      <p>↩ Easy refunds if payment fails</p>
+    </div>
+
+  </div>
+
 </div>
 
+<!-- ================= TIMER SCRIPT ================= -->
 <script>
   const container = document.querySelector("[data-seconds]");
   let seconds = parseInt(container.dataset.seconds);
   const failUrl = container.dataset.failUrl;
 
-  function countdown() {
-    const timerEl = document.getElementById("timer");
-    const payBtn = document.getElementById("payBtn");
-    const expiredBtn = document.getElementById("expiredBtn");
+  const timerEl = document.getElementById("timer");
+  const payBtn = document.getElementById("payBtn");
+  const expiredBtn = document.getElementById("expiredBtn");
 
+  function countdown() {
     if (seconds <= 0) {
       payBtn.classList.add("hidden");
       expiredBtn.classList.remove("hidden");
@@ -53,7 +96,7 @@
 
     let min = Math.floor(seconds / 60);
     let sec = seconds % 60;
-    timerEl.innerText = min + ":" + (sec < 10 ? "0" : "") + sec;
+    timerEl.innerText = ${min}:${sec < 10 ? "0" : ""}${sec};
 
     seconds--;
     setTimeout(countdown, 1000);
@@ -62,5 +105,4 @@
   countdown();
 </script>
 
-</body>
-</html>
+{% endblock %}

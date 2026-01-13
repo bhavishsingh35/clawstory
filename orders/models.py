@@ -1,7 +1,6 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
-from datetime import timedelta
 
 
 class Order(models.Model):
@@ -10,7 +9,9 @@ class Order(models.Model):
         ("PLACED", "Placed"),
         ("PAYMENT_PENDING", "Payment Pending"),
         ("CONFIRMED", "Confirmed"),
+        ("PACKED", "Packed"),
         ("DISPATCHED", "Dispatched"),
+        ("OUT_FOR_DELIVERY", "Out for Delivery"),
         ("DELIVERED", "Delivered"),
         ("CANCELLED", "Cancelled"),
     ]
@@ -46,7 +47,7 @@ class Order(models.Model):
     )
 
     status = models.CharField(
-        max_length=20,
+        max_length=30,
         choices=STATUS_CHOICES,
         default="PLACED"
     )
@@ -56,12 +57,13 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def is_payment_expired(self):
-        if self.payment_expires_at:
-            return timezone.now() > self.payment_expires_at
-        return False
+        return self.payment_expires_at and timezone.now() > self.payment_expires_at
+
+    def can_cancel(self):
+        return self.status in ["PLACED", "CONFIRMED"]
 
     def _str_(self):
-        return f"Order #{self.id} - {self.user}"
+        return f"Order #{self.id}"
 
 
 class OrderItem(models.Model):
@@ -78,6 +80,10 @@ class OrderItem(models.Model):
 
     price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField()
+
+    @property
+    def subtotal(self):
+        return self.price * self.quantity
 
     def _str_(self):
         return f"{self.product.name} x {self.quantity}"

@@ -1,28 +1,76 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Payment Failed</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
+{% extends "base.html" %}
+{% block title %}Payment Failed | ClawStory{% endblock %}
 
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+{% block content %}
 
-<div class="bg-white w-full max-w-md rounded-lg shadow-lg p-6 text-center">
+<!-- SEO -->
+<meta name="description" content="Payment failed on ClawStory. Retry payment securely or choose another payment option.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <div class="text-red-600 text-4xl mb-3">❌</div>
+<div class="min-h-[80vh] flex items-center justify-center bg-gray-100 px-4">
 
-  <h2 class="text-2xl font-semibold mb-2">Payment Failed</h2>
-  <p class="text-gray-600 mb-6">
-    Your payment session expired or was not completed.
-  </p>
+  <div class="max-w-xl w-full bg-white rounded-3xl shadow-xl p-8 md:p-10 text-center">
 
-  <a href="{% url 'orders:checkout' %}"
-     class="block w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition">
-    Retry Payment
-  </a>
+    <!-- ICON -->
+    <div class="mx-auto w-20 h-20 flex items-center justify-center rounded-full bg-red-100 text-red-600 mb-6">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none"
+           viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z" />
+      </svg>
+    </div>
+
+    <!-- TITLE -->
+    <h1 class="text-3xl font-extrabold text-gray-900 mb-2">
+      Payment Failed
+    </h1>
+
+    <p class="text-gray-600 mb-6">
+      Don’t worry — your order is safe.  
+      The payment was not completed within the allowed time.
+    </p>
+
+    <!-- INFO BOX -->
+    <div class="bg-gray-50 rounded-2xl p-5 mb-6 text-left text-sm text-gray-700">
+      <ul class="space-y-2">
+        <li>• No amount has been deducted</li>
+        <li>• You can retry the payment immediately</li>
+        <li>• Choose a different payment method if needed</li>
+      </ul>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+
+      <a href="{% url 'orders:checkout' %}"
+         class="block bg-black text-white py-3 rounded-xl font-semibold hover:bg-gray-900 transition">
+        Retry Payment
+      </a>
+
+      <a href="{% url 'cart:cart_detail' %}"
+         class="block bg-gray-100 py-3 rounded-xl font-semibold hover:bg-gray-200 transition">
+        Go to Cart
+      </a>
+
+    </div>
+
+    <!-- SECONDARY LINKS -->
+    <div class="text-sm text-gray-500 space-y-2">
+      <p>
+        Need help?  
+        <a href="#" class="text-blue-600 hover:underline">
+          Contact Support
+        </a>
+      </p>
+      <p>
+        <a href="{% url 'orders:my_orders' %}" class="hover:underline">
+          View My Orders
+        </a>
+      </p>
+    </div>
+
+  </div>
 
 </div>
 
-</body>
-</html>
+{% endblock %}

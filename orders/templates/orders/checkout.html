@@ -1,54 +1,102 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Checkout</title>
+  <meta charset="UTF-8" />
+  <title>Secure Checkout | ClawStory</title>
+
+  <!-- SEO -->
+  <meta name="description" content="Secure checkout at ClawStory. Fast delivery, safe payments, easy returns.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+<body class="bg-gray-100">
 
-<div class="bg-white p-8 rounded shadow w-full max-w-md">
-  <h2 class="text-2xl font-bold mb-6 text-center">
-    Choose Payment Method
-  </h2>
+<main class="max-w-6xl mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-  <!-- 🔴 CRITICAL FIX: action + method -->
-  <form method="POST" action="{% url 'orders:create_order' %}">
-    {% csrf_token %}
+  <!-- LEFT COLUMN -->
+  <section class="lg:col-span-2 space-y-6">
 
-    <!-- COD -->
-    <label class="flex items-center space-x-3 border p-3 rounded cursor-pointer mb-3">
-      <input type="radio"
-             name="payment_method"
-             value="COD"
-             required>
-      <span>Cash on Delivery</span>
-    </label>
+    <!-- PAYMENT -->
+    <div class="bg-white rounded-2xl shadow p-6">
+      <h1 class="text-2xl font-bold mb-6">Checkout</h1>
 
-    <!-- CARD -->
-    <label class="flex items-center space-x-3 border p-3 rounded cursor-pointer mb-3">
-      <input type="radio"
-             name="payment_method"
-             value="CARD">
-      <span>Credit / Debit Card</span>
-    </label>
+      <form method="POST" action="{% url 'orders:create_order' %}" class="space-y-4">
+        {% csrf_token %}
 
-    <!-- UPI -->
-    <label class="flex items-center space-x-3 border p-3 rounded cursor-pointer mb-6">
-      <input type="radio"
-             name="payment_method"
-             value="UPI">
-      <span>UPI</span>
-    </label>
+        <label class="flex gap-4 p-4 border rounded-xl cursor-pointer hover:border-black">
+          <input type="radio" name="payment_method" value="COD" required>
+          <div>
+            <p class="font-medium">Cash on Delivery</p>
+            <p class="text-sm text-gray-500">Pay when your order arrives</p>
+          </div>
+        </label>
 
-    <!-- 🔴 CRITICAL FIX: type="submit" -->
-    <button type="submit"
-            class="w-full bg-black text-white py-2 rounded hover:bg-gray-800">
-      Place Order
-    </button>
-  </form>
-</div>
+        <label class="flex gap-4 p-4 border rounded-xl cursor-pointer hover:border-black">
+          <input type="radio" name="payment_method" value="CARD">
+          <div>
+            <p class="font-medium">Credit / Debit Card</p>
+            <p class="text-sm text-gray-500">Visa, MasterCard, RuPay</p>
+          </div>
+        </label>
+
+        <label class="flex gap-4 p-4 border rounded-xl cursor-pointer hover:border-black">
+          <input type="radio" name="payment_method" value="UPI">
+          <div>
+            <p class="font-medium">UPI</p>
+            <p class="text-sm text-gray-500">Google Pay, PhonePe, Paytm</p>
+          </div>
+        </label>
+
+        <button
+          type="submit"
+          class="w-full bg-black text-white py-3 rounded-xl font-semibold hover:bg-gray-900 transition"
+        >
+          Place Order Securely
+        </button>
+      </form>
+    </div>
+
+  </section>
+
+  <!-- RIGHT COLUMN -->
+  <aside class="bg-white rounded-2xl shadow p-6 h-fit sticky top-6">
+
+    <h2 class="text-lg font-bold mb-4">Order Summary</h2>
+
+    <div class="space-y-3 text-sm">
+      {% for item in cart_items %}
+      <div class="flex justify-between">
+        <span>{{ item.quantity }} × {{ item.product.name }}</span>
+        <span>₹{{ item.line_total }}</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <hr class="my-4">
+
+    <div class="flex justify-between text-sm">
+      <span>Delivery</span>
+      <span class="text-green-600">FREE</span>
+    </div>
+
+    <div class="flex justify-between font-bold text-lg mt-2">
+      <span>Total</span>
+      <span>₹{{ cart_total }}</span>
+    </div>
+
+    <div class="mt-6 text-xs text-gray-500 space-y-2">
+      <p>🔒 Secure Payments</p>
+      <p>🚚 Fast Delivery</p>
+      <p>↩ Easy Returns</p>
+    </div>
+
+  </aside>
+
+</main>
 
 </body>
 </html>
