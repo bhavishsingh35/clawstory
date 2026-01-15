@@ -1,45 +1,65 @@
 {% extends "base.html" %}
-{% block title %}{{ product.name }} | Buy Online at Best Price{% endblock %}
+{% block title %}{{ product.name }} | Buy Online at Best Price | ClawStory{% endblock %}
+
+{% block extra_head %}
+<!-- Product SEO Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": "{{ product.name }}",
+  "image": "{{ product.image.url }}",
+  "description": "{{ product.description|default:'' }}",
+  "offers": {
+    "@type": "Offer",
+    "priceCurrency": "INR",
+    "price": "{{ product.price }}",
+    "availability": "{% if product.stock > 0 %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}"
+  }
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <section class="max-w-7xl mx-auto px-4 py-8">
 
   <!-- Breadcrumb -->
-  <nav class="text-sm text-gray-500 mb-4">
+  <nav class="text-sm text-gray-500 mb-6">
     <a href="{% url 'pages:home' %}" class="hover:underline">Home</a> /
     <a href="{% url 'pages:collection_list' %}" class="hover:underline">Collections</a> /
-    <span class="text-gray-700">{{ product.name }}</span>
+    <span class="text-gray-700 font-medium">{{ product.name }}</span>
   </nav>
 
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
 
     <!-- IMAGE -->
     <div class="flex justify-center">
-      <div class="w-[320px] sm:w-[380px] md:w-[420px] bg-gray-100 rounded-xl overflow-hidden">
+      <div class="w-[320px] sm:w-[380px] md:w-[420px] bg-gray-100 rounded-2xl overflow-hidden group">
         {% if product.image %}
         <img
           src="{{ product.image.url }}"
           alt="{{ product.name }}"
-          class="w-full h-auto object-contain"
+          loading="lazy"
+          class="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
         >
         {% endif %}
       </div>
     </div>
 
     <!-- DETAILS -->
-    <div class="space-y-4">
+    <div class="space-y-5">
 
-      <h1 class="text-3xl font-bold text-gray-900">
+      <h1 class="text-3xl font-extrabold text-gray-900">
         {{ product.name }}
       </h1>
 
-      <p class="text-2xl font-semibold text-gray-900">
+      <p class="text-2xl font-bold text-gray-900">
         ₹{{ product.price }}
       </p>
 
       {% if product.stock > 0 %}
         <p class="text-green-600 font-medium">
-          ✔ In Stock ({{ product.stock }} available)
+          ✔ In Stock ({{ product.stock }} left)
         </p>
       {% else %}
         <p class="text-red-600 font-medium">
@@ -53,13 +73,15 @@
       </p>
       {% endif %}
 
-      <!-- ADD TO CART -->
+      <!-- ADD TO CART / BUY NOW -->
       {% if product.stock > 0 %}
       <form
-        method="get"
+        method="post"
         action="{% url 'cart:cart_add' product.id %}"
-        class="flex flex-col sm:flex-row gap-4 mt-4"
+        class="flex flex-col sm:flex-row gap-4 mt-6"
       >
+        {% csrf_token %}
+
         <div>
           <label class="block text-sm font-medium mb-1">Quantity</label>
           <input
@@ -68,31 +90,50 @@
             value="1"
             min="1"
             max="{{ product.stock }}"
-            class="w-24 border rounded-md px-3 py-2"
+            class="w-24 border rounded-md px-3 py-2 focus:ring-2 focus:ring-yellow-400"
           >
         </div>
 
+        <!-- Add to Cart -->
         <button
           type="submit"
+          name="action"
+          value="add"
           class="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-3 rounded-lg font-semibold transition"
         >
           Add to Cart
         </button>
 
-        <a
-          href="{% url 'cart:cart_detail' %}"
-          class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold transition text-center"
+        <!-- Buy Now -->
+        <button
+          type="submit"
+          name="action"
+          value="buy"
+          class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold transition"
         >
           Buy Now
-        </a>
+        </button>
       </form>
+      {% else %}
+      <button
+        disabled
+        class="bg-gray-300 text-gray-600 px-6 py-3 rounded-lg cursor-not-allowed mt-6"
+      >
+        Currently Unavailable
+      </button>
       {% endif %}
 
-      <!-- TRUST -->
-      <div class="border-t pt-4 text-sm text-gray-600 space-y-1">
-        <p>🚚 Free delivery above ₹999</p>
-        <p>🔄 7-day replacement</p>
-        <p>🔒 Secure payments</p>
+      <!-- DELIVERY / TRUST -->
+      <div class="border-t pt-4 text-sm text-gray-600 space-y-2">
+        <p>🚚 Free delivery on orders above ₹999</p>
+        <p>🔄 7-day replacement policy</p>
+        <p>🔒 100% secure payments</p>
+        <p>📦 Genuine & quality-checked products</p>
+      </div>
+
+      <!-- REVIEWS PLACEHOLDER -->
+      <div class="border-t pt-4 text-sm text-gray-500">
+        ⭐ Reviews coming soon
       </div>
 
     </div>

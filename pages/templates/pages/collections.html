@@ -1,51 +1,74 @@
 {% extends "base.html" %}
+
 {% block title %}Collections | The Claw Story{% endblock %}
 
+{% block extra_head %}
+<meta
+  name="description"
+  content="Explore curated fashion collections at The Claw Story. Premium styles crafted for everyday wear."
+/>
+{% endblock %}
+
 {% block content %}
-<meta name="description" content="Explore curated fashion collections at The Claw Story." />
+<section class="max-w-7xl mx-auto px-4">
 
-<section class="max-w-7xl mx-auto px-4 py-10">
+  <!-- HEADER -->
+  <header class="mb-8">
+    <h1 class="text-2xl font-bold mb-2">Collections</h1>
+    <p class="text-gray-600">
+      Curated collections designed for everyday style.
+    </p>
+  </header>
 
-  <h1 class="text-3xl font-bold mb-2">Collections</h1>
-  <p class="text-gray-600 mb-8">
-    Curated collections designed for everyday style.
-  </p>
-
+  <!-- COLLECTION GRID -->
+  {% if collections %}
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
 
     {% for collection in collections %}
-    <a href="{% url 'pages:collection_detail' collection.slug %}"
-   class="group bg-white rounded-xl shadow-sm hover:shadow-xl transition overflow-hidden flex flex-col">
+    <a
+      href="{% url 'pages:collection_detail' collection.slug %}"
+      class="group bg-white rounded-xl shadow-sm hover:shadow-xl transition overflow-hidden flex flex-col"
+      aria-label="View {{ collection.name }} collection"
+    >
 
-  <!-- IMAGE -->
-   <div class="relative w-full aspect-[1/1] bg-gray-100 overflow-hidden">
-  <img
-    src="{{ collection.image.url }}"
-    alt="{{ collection.name }}"
-    loading="lazy"
-    class="absolute inset-0 w-full h-full object-cover"
-  />
-</div>
+      <!-- IMAGE -->
+      <div class="relative w-full aspect-[1/1] bg-gray-100 overflow-hidden">
+        {% if collection.image %}
+        <img
+          src="{{ collection.image.url }}"
+          alt="{{ collection.name }}"
+          loading="lazy"
+          class="absolute inset-0 w-full h-full object-cover transition group-hover:scale-105"
+        />
+        {% else %}
+        <div class="absolute inset-0 flex items-center justify-center text-gray-400 text-sm">
+          No image available
+        </div>
+        {% endif %}
+      </div>
 
-  <!-- CONTENT -->
-  <div class="p-4">
-    <h2 class="text-lg font-semibold text-gray-900">
-      {{ collection.name }}
-    </h2>
+      <!-- CONTENT -->
+      <div class="p-4">
+        <h2 class="text-lg font-semibold text-gray-900">
+          {{ collection.name }}
+        </h2>
 
-    <p class="text-sm text-gray-600 mt-1">
-      {{ collection.products.count }} products
-    </p>
+        <p class="text-sm text-gray-600 mt-1">
+          {{ collection.products.count }} products
+        </p>
 
-    <span class="inline-block mt-3 text-sm font-medium text-blue-600 hover:underline">
-      View Collection →
-    </span>
-  </div>
+        <span class="inline-block mt-3 text-sm font-medium text-blue-600 group-hover:underline">
+          View Collection →
+        </span>
+      </div>
 
-</a>
+    </a>
     {% endfor %}
 
   </div>
+  {% else %}
+    <p class="text-gray-500">No collections available.</p>
+  {% endif %}
 
 </section>
 {% endblock %}

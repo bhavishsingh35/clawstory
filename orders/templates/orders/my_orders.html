@@ -2,85 +2,144 @@
 {% block title %}My Orders | ClawStory{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 py-10">
+<div class="max-w-7xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
 
-<h1 class="text-3xl font-extrabold mb-8">My Orders</h1>
+  <h1 class="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8">
+    My Orders
+  </h1>
 
-{% if orders_data %}
-<div class="space-y-8">
+  {% if orders %}
+  <div class="space-y-6">
 
-{% for data in orders_data %}
-{% with order=data.order current=data.current_step %}
-<div class="bg-white rounded-2xl shadow">
+    {% for order in orders %}
+    <div class="bg-white rounded-2xl shadow overflow-hidden">
 
-<div class="p-6 border-b flex justify-between">
-  <div>
-    <p class="font-semibold text-lg">Order #{{ order.id }}</p>
-    <p class="text-sm text-gray-500">
-      {{ order.created_at|date:"d M Y, h:i A" }}
-    </p>
+      <!-- ================= HEADER ================= -->
+      <div class="p-4 sm:p-6 border-b flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+        <div>
+          <p class="font-semibold text-sm sm:text-lg break-all">
+            Order #{{ order.id }}
+          </p>
+          <p class="text-xs sm:text-sm text-gray-500">
+            {{ order.created_at|date:"d M Y, h:i A" }}
+          </p>
+        </div>
+
+        <span
+          class="self-start sm:self-auto px-3 py-1 rounded-full text-xs sm:text-sm font-medium
+          {% if order.status == 'PAID' %}
+            bg-green-100 text-green-700
+          {% elif order.status == 'FAILED' or order.status == 'CANCELLED' %}
+            bg-red-100 text-red-700
+          {% elif order.status == 'PAYMENT_PENDING' %}
+            bg-yellow-100 text-yellow-700
+          {% else %}
+            bg-blue-100 text-blue-700
+          {% endif %}"
+        >
+          {{ order.get_status_display }}
+        </span>
+      </div>
+
+      <!-- ================= BODY ================= -->
+      <div class="p-4 sm:p-6 grid gap-6 md:grid-cols-3">
+
+        <!-- ITEMS -->
+        <div class="md:col-span-2">
+          <p class="font-semibold mb-3 text-sm sm:text-base">
+            Items
+          </p>
+
+          <ul class="space-y-2 text-sm">
+            {% for item in order.items.all %}
+            <li class="flex justify-between gap-4">
+              <span class="line-clamp-1">
+                {{ item.quantity }} × {{ item.product_name }}
+              </span>
+              <span>₹{{ item.subtotal }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- SUMMARY -->
+        <div class="bg-gray-50 p-4 rounded-xl text-sm space-y-2">
+          <p class="flex justify-between">
+            <span>Subtotal</span>
+            <strong>₹{{ order.subtotal }}</strong>
+          </p>
+
+          <p class="flex justify-between">
+            <span>Delivery</span>
+            <span class="text-green-600">FREE</span>
+          </p>
+
+          <p class="flex justify-between font-semibold">
+            <span>Total</span>
+            <span>₹{{ order.total_amount }}</span>
+          </p>
+
+          <p class="flex justify-between">
+            <span>Payment</span>
+            <span>{{ order.get_payment_method_display }}</span>
+          </p>
+
+          <p class="flex justify-between">
+            <span>Payment Status</span>
+            <span class="font-medium">
+              {% if order.payment_status == "SUCCESS" %}
+                Paid
+              {% elif order.payment_status == "FAILED" %}
+                Failed
+              {% else %}
+                Pending
+              {% endif %}
+            </span>
+          </p>
+        </div>
+
+      </div>
+
+      <!-- ================= ACTIONS ================= -->
+      <div class="px-4 sm:px-6 py-4 border-t flex flex-wrap gap-3 text-sm">
+
+        {% if order.payment_status == "PENDING" %}
+        <a
+          href="{% url 'orders:payment' order.id %}"
+          class="px-4 py-2 bg-black text-white rounded-lg min-h-[40px]"
+        >
+          Complete Payment
+        </a>
+        {% endif %}
+
+        <a
+          href="{% url 'orders:order_detail' order.id %}"
+          class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 min-h-[40px]"
+        >
+          View Order
+        </a>
+
+      </div>
+
+    </div>
+    {% endfor %}
+
   </div>
-  <span class="px-4 py-1 rounded-full text-sm
-    {% if order.status == 'DELIVERED' %}bg-green-100 text-green-700
-    {% elif order.status == 'CANCELLED' %}bg-red-100 text-red-700
-    {% else %}bg-blue-100 text-blue-700{% endif %}">
-    {{ order.status }}
-  </span>
-</div>
 
-{% include "orders/components/order_timeline.html" %}
-
-<div class="p-6 grid md:grid-cols-3 gap-6">
-  <div class="md:col-span-2">
-    <p class="font-semibold mb-3">Items</p>
-    <ul class="space-y-2 text-sm">
-      {% for item in order.items.all %}
-      <li class="flex justify-between">
-        <span>{{ item.quantity }} × {{ item.product.name }}</span>
-        <span>₹{{ item.subtotal }}</span>
-      </li>
-      {% endfor %}
-    </ul>
+  {% else %}
+  <!-- ================= EMPTY STATE ================= -->
+  <div class="bg-white rounded-2xl shadow p-8 text-center">
+    <p class="text-gray-600 mb-4">
+      You haven’t placed any orders yet.
+    </p>
+    <a
+      href="/"
+      class="inline-block px-6 py-3 bg-black text-white rounded-xl"
+    >
+      Start Shopping
+    </a>
   </div>
-
-  <div class="bg-gray-50 p-4 rounded-xl text-sm">
-    <p class="flex justify-between mb-2">
-      <span>Total</span><strong>₹{{ order.total }}</strong>
-    </p>
-    <p class="flex justify-between mb-2">
-      <span>Payment</span>{{ order.payment_method }}
-    </p>
-    <p class="flex justify-between">
-      <span>Status</span>{{ order.payment_status }}
-    </p>
-  </div>
-</div>
-
-<div class="px-6 py-4 border-t flex gap-3 text-sm">
-  <a href="{% url 'orders:order_success' order.id %}"
-     class="px-4 py-2 bg-black text-white rounded-lg">
-    View Details
-  </a>
-
-  {% if order.can_cancel %}
-  <button class="px-4 py-2 bg-red-100 text-red-600 rounded-lg">
-    Cancel Order
-  </button>
   {% endif %}
-
-  <button class="px-4 py-2 bg-gray-100 rounded-lg">
-    Download Invoice
-  </button>
-</div>
-
-</div>
-{% endwith %}
-{% endfor %}
-
-</div>
-{% else %}
-<p>No orders yet.</p>
-{% endif %}
 
 </div>
 {% endblock %}

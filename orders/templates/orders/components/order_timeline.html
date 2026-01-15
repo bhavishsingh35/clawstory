@@ -1,16 +1,58 @@
 <div class="px-6 py-4">
-  <div class="flex justify-between text-xs text-gray-500">
-    {% for step in ORDER_STEPS %}
+  <div class="flex justify-between gap-2 text-[10px] sm:text-xs text-gray-500">
+
+    <!-- CREATED -->
     <div class="flex-1 text-center">
       <div class="mx-auto w-3 h-3 rounded-full
-        {% if forloop.counter0 <= current %}
+        {% if order.status == 'CREATED' or order.status == 'PAYMENT_PENDING' or order.status == 'PAID' %}
           bg-green-600
         {% else %}
           bg-gray-300
         {% endif %}
       "></div>
-      <p class="mt-1 uppercase">{{ step|cut:"_" }}</p>
+      <p class="mt-1 uppercase tracking-tight">Created</p>
     </div>
-    {% endfor %}
+
+    <!-- PAYMENT -->
+    <div class="flex-1 text-center">
+      <div class="mx-auto w-3 h-3 rounded-full
+        {% if order.payment_status == 'SUCCESS' %}
+          bg-green-600
+        {% elif order.payment_status == 'FAILED' %}
+          bg-red-500
+        {% else %}
+          bg-yellow-500
+        {% endif %}
+      "></div>
+      <p class="mt-1 uppercase tracking-tight">Payment</p>
+    </div>
+
+    <!-- CONFIRMED -->
+    <div class="flex-1 text-center">
+      <div class="mx-auto w-3 h-3 rounded-full
+        {% if order.status == 'PAID' %}
+          bg-green-600
+        {% else %}
+          bg-gray-300
+        {% endif %}
+      "></div>
+      <p class="mt-1 uppercase tracking-tight">Confirmed</p>
+    </div>
+
   </div>
+
+  <!-- FAILURE STATES -->
+  {% if order.status == "CANCELLED" %}
+    <p class="mt-3 text-center text-xs text-red-600 font-medium">
+      Order Cancelled
+    </p>
+  {% elif order.payment_status == "FAILED" %}
+    <p class="mt-3 text-center text-xs text-red-600 font-medium">
+      Payment Failed — retry required
+    </p>
+  {% elif order.status == "PAYMENT_PENDING" %}
+    <p class="mt-3 text-center text-xs text-yellow-600 font-medium">
+      Awaiting payment confirmation
+    </p>
+  {% endif %}
 </div>

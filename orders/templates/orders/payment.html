@@ -4,105 +4,171 @@
 {% block content %}
 
 <!-- SEO -->
-<meta name="description" content="Secure payment for your ClawStory order. Complete payment before session expires.">
+<meta name="description" content="Secure payment for your ClawStory order">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<div class="min-h-[80vh] flex items-center justify-center bg-gray-100 px-4">
+<div class="min-h-[80vh] flex items-center justify-center bg-gray-100 px-3 sm:px-4">
 
   <div
-    class="w-full max-w-lg bg-white rounded-3xl shadow-xl p-8 text-center"
-    data-seconds="{{ remaining_seconds|default:0 }}"
+    id="payment-container"
+    class="w-full max-w-lg bg-white rounded-3xl shadow-xl p-6 sm:p-8 text-center"
+
+    data-expiry-seconds="{{ remaining_seconds }}"
     data-fail-url="{% url 'orders:payment_failed' order.id %}"
+    data-success-url="{% url 'orders:order_success' order.id %}"
+
+    data-key="{{ razorpay_key }}"
+    data-order-id="{{ razorpay_order_id }}"
+    data-amount="{{ razorpay_amount }}"
+
+    data-name="{{ order.full_name }}"
+    data-phone="{{ order.phone }}"
   >
 
-    <!-- HEADER -->
-    <h1 class="text-2xl font-extrabold mb-1">Complete Payment</h1>
+    <!-- ================= HEADER ================= -->
+    <h1 class="text-xl sm:text-2xl font-extrabold mb-1">
+      Complete Payment
+    </h1>
     <p class="text-sm text-gray-500 mb-6">
-      Secure transaction • Session expires soon
+      Secure Razorpay transaction
     </p>
 
-    <!-- ORDER INFO -->
-    <div class="bg-gray-50 rounded-2xl p-5 mb-6 text-left text-sm">
-      <div class="flex justify-between mb-2">
+    <!-- ================= ORDER INFO ================= -->
+    <div class="bg-gray-50 rounded-2xl p-4 sm:p-5 mb-6 text-left text-sm">
+      <div class="flex justify-between mb-2 gap-4">
         <span class="text-gray-500">Order ID</span>
-        <span class="font-semibold">#{{ order.id }}</span>
+        <span class="font-semibold break-all">
+          #{{ order.id }}
+        </span>
       </div>
+
       <div class="flex justify-between mb-2">
-        <span class="text-gray-500">Amount Payable</span>
-        <span class="font-semibold">₹{{ order.total }}</span>
+        <span class="text-gray-500">Amount</span>
+        <span class="font-semibold">
+          ₹{{ order.total_amount|floatformat:2 }}
+        </span>
       </div>
+
       <div class="flex justify-between">
         <span class="text-gray-500">Payment Method</span>
-        <span class="font-semibold">{{ order.payment_method }}</span>
+        <span class="font-semibold">Online</span>
       </div>
     </div>
 
-    <!-- TIMER -->
+    <!-- ================= TIMER ================= -->
     <div class="mb-6">
-      <p class="text-sm text-gray-600 mb-1">Time remaining</p>
-      <p id="timer" class="text-2xl font-bold text-red-600">--:--</p>
+      <p class="text-sm text-gray-600 mb-1">
+        Time remaining
+      </p>
+      <p
+        id="timer"
+        class="text-2xl font-bold text-red-600 tabular-nums"
+      >
+        --:--
+      </p>
     </div>
 
-    <!-- PAYMENT ACTIONS -->
-    <div class="space-y-3">
+    <!-- ================= PAY CTA ================= -->
+    <button
+      id="pay-btn"
+      class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition min-h-[48px]"
+    >
+      Pay Securely
+    </button>
 
-      <!-- ✅ DUMMY SUCCESS (replace with Razorpay later) -->
-      <a
-        id="payBtn"
-        href="{% url 'orders:payment_success' order.id %}"
-        class="block w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition"
-      >
-        Pay Now (Dummy)
-      </a>
+    <!-- ================= EXPIRED ================= -->
+    <button
+      id="expired-btn"
+      class="hidden w-full bg-gray-400 text-white py-3 rounded-xl font-semibold mt-3 cursor-not-allowed min-h-[48px]"
+      disabled
+    >
+      Payment Session Expired
+    </button>
 
-      <!-- EXPIRED STATE -->
-      <button
-        id="expiredBtn"
-        class="hidden w-full bg-gray-400 text-white py-3 rounded-xl font-semibold cursor-not-allowed"
-      >
-        Payment Session Expired
-      </button>
-
-    </div>
-
-    <!-- TRUST -->
+    <!-- ================= TRUST ================= -->
     <div class="mt-6 text-xs text-gray-500 space-y-1">
-      <p>🔒 Secure & encrypted payment</p>
-      <p>💳 Powered by trusted gateways</p>
-      <p>↩ Easy refunds if payment fails</p>
+      <p>🔒 PCI-DSS compliant</p>
+      <p>💳 UPI, Cards, NetBanking</p>
+      <p>↩ Automatic refunds on failure</p>
     </div>
 
   </div>
 
 </div>
 
-<!-- ================= TIMER SCRIPT ================= -->
+<!-- Razorpay SDK (non-blocking) -->
+<!-- Razorpay SDK -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
 <script>
-  const container = document.querySelector("[data-seconds]");
-  let seconds = parseInt(container.dataset.seconds);
-  const failUrl = container.dataset.failUrl;
-
-  const timerEl = document.getElementById("timer");
-  const payBtn = document.getElementById("payBtn");
-  const expiredBtn = document.getElementById("expiredBtn");
-
-  function countdown() {
-    if (seconds <= 0) {
-      payBtn.classList.add("hidden");
-      expiredBtn.classList.remove("hidden");
-      window.location.href = failUrl;
-      return;
-    }
-
-    let min = Math.floor(seconds / 60);
-    let sec = seconds % 60;
-    timerEl.innerText = ${min}:${sec < 10 ? "0" : ""}${sec};
-
-    seconds--;
-    setTimeout(countdown, 1000);
+(function () {
+  const container = document.getElementById("payment-container");
+  if (!container || typeof Razorpay === "undefined") {
+    console.error("Razorpay SDK not loaded");
+    return;
   }
 
-  countdown();
+  const expirySeconds = parseInt(container.dataset.expirySeconds, 10);
+  const failUrl = container.dataset.failUrl;
+  const successUrl = container.dataset.successUrl;
+
+  const key = container.dataset.key;
+  const orderId = container.dataset.orderId;
+  const amount = parseInt(container.dataset.amount, 10);
+
+  const name = container.dataset.name;
+  const phone = container.dataset.phone;
+
+  const payBtn = document.getElementById("pay-btn");
+  const expiredBtn = document.getElementById("expired-btn");
+  const timerEl = document.getElementById("timer");
+
+  let seconds = expirySeconds;
+  let expired = false;
+  let locked = false;
+
+  function tick() {
+    if (seconds <= 0) {
+      expired = true;
+      payBtn.classList.add("hidden");
+      expiredBtn.classList.remove("hidden");
+      return;
+    }
+    timerEl.textContent =
+      Math.floor(seconds / 60) + ":" + String(seconds % 60).padStart(2, "0");
+    seconds--;
+    setTimeout(tick, 1000);
+  }
+  tick();
+
+  const rzp = new Razorpay({
+    key: key,
+    order_id: orderId,
+    amount: amount,
+    currency: "INR",
+    name: "ClawStory",
+    description: "Order Payment",
+    prefill: { name, contact: phone },
+    handler: function () {
+      window.location.replace(successUrl);
+    },
+    modal: {
+      ondismiss: function () {
+        if (!expired) window.location.replace(failUrl);
+      }
+    },
+    theme: { color: "#16a34a" }
+  });
+
+  payBtn.addEventListener("click", function (e) {
+    e.preventDefault();
+    if (expired || locked) return;
+    locked = true;
+    payBtn.textContent = "Opening Payment…";
+    rzp.open();
+  });
+})();
 </script>
+
 
 {% endblock %}

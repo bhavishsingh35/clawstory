@@ -1,9 +1,91 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
 
-{% block content %}
-<div class="min-h-[calc(100vh-120px)] flex items-center justify-center">
-  <div class="w-full max-w-md bg-white p-6 rounded-xl shadow-lg">
-    {% block auth_content %}{% endblock %}
+  <!-- Responsive -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- SEO -->
+  <title>{% block title %}Account | ClawStory{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Login or create an account on ClawStory to manage orders and checkout faster.{% endblock %}">
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Smooth UI -->
+  <style>
+    html { scroll-behavior: smooth; }
+  </style>
+
+  {% block extra_head %}{% endblock %}
+</head>
+
+<body class="bg-gray-100 min-h-screen flex flex-col">
+
+<!-- ================= HEADER ================= -->
+<header class="bg-white shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+
+    <!-- Logo -->
+    <a href="{% url 'pages:home' %}" class="text-xl font-extrabold tracking-tight">
+      Claw<span class="text-blue-600">Story</span>
+    </a>
+
+    <!-- Simple Nav -->
+    <nav class="text-sm">
+      <a href="{% url 'pages:home' %}" class="hover:underline">Home</a>
+    </nav>
+
   </div>
-</div>
-{% endblock %}
+</header>
+
+<!-- ================= AUTH CONTENT ================= -->
+<main class="flex-1 flex items-center justify-center px-4 py-10">
+
+  <div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+
+    <!-- Page Heading -->
+    <div class="mb-6 text-center">
+      <h1 class="text-2xl font-bold">
+        {% block heading %}Welcome to ClawStory{% endblock %}
+      </h1>
+      <p class="text-sm text-gray-500 mt-1">
+        {% block subheading %}{% endblock %}
+      </p>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+      <div class="mb-4 space-y-2">
+        {% for message in messages %}
+          <div class="text-sm px-4 py-2 rounded
+            {% if message.tags == 'error' %}
+              bg-red-100 text-red-700
+            {% else %}
+              bg-green-100 text-green-700
+            {% endif %}
+          ">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- FORM CONTENT -->
+    {% block content %}{% endblock %}
+
+  </div>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="text-center text-xs text-gray-500 py-6">
+  © 2026 ClawStory. Secure Authentication.
+</footer>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

@@ -1,96 +1,135 @@
 {% extends "base.html" %}
-{% block title %}Order Confirmed | ClawStory{% endblock %}
+{% block title %}Order Status | ClawStory{% endblock %}
 
 {% block content %}
 
 <!-- SEO -->
-<meta name="description" content="Your order has been successfully placed on ClawStory. Track order, view details, and continue shopping.">
+<meta name="description" content="Check your ClawStory order status, payment confirmation, and next steps.">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<div class="min-h-[80vh] flex items-center justify-center bg-gray-100 px-4">
+<div class="min-h-[80vh] flex items-center justify-center bg-gray-100 px-3 sm:px-4">
 
-  <div class="max-w-3xl w-full bg-white rounded-3xl shadow-xl p-8 md:p-12 text-center">
+  <div class="max-w-3xl w-full bg-white rounded-3xl shadow-xl p-6 sm:p-8 md:p-12 text-center">
 
-    <!-- SUCCESS ICON -->
-    <div class="mx-auto w-20 h-20 flex items-center justify-center rounded-full bg-green-100 text-green-600 mb-6">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none"
-           viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
-              d="M5 13l4 4L19 7" />
-      </svg>
+    <!-- ================= STATUS ICON ================= -->
+    <div
+      class="mx-auto w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-full mb-6
+      {% if order.payment_status == 'SUCCESS' %}
+        bg-green-100 text-green-600
+      {% elif order.payment_status == 'FAILED' %}
+        bg-red-100 text-red-600
+      {% else %}
+        bg-yellow-100 text-yellow-600
+      {% endif %}
+      "
+      aria-hidden="true"
+    >
+      {% if order.payment_status == 'SUCCESS' %}
+        ✓
+      {% elif order.payment_status == 'FAILED' %}
+        !
+      {% else %}
+        ⏳
+      {% endif %}
     </div>
 
-    <!-- TITLE -->
-    <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-2">
-      Order Placed Successfully
+    <!-- ================= TITLE ================= -->
+    <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 mb-2">
+      {% if order.payment_status == 'SUCCESS' %}
+        Order Confirmed
+      {% elif order.payment_status == 'FAILED' %}
+        Payment Failed
+      {% else %}
+        Payment Pending
+      {% endif %}
     </h1>
 
-    <p class="text-gray-600 mb-6">
-      Thank you for shopping with <span class="font-semibold">ClawStory</span>
+    <p class="text-gray-600 mb-6 text-sm sm:text-base break-all">
+      Order reference <span class="font-semibold">#{{ order.id }}</span>
     </p>
 
-    <!-- ORDER INFO -->
-    <div class="bg-gray-50 rounded-2xl p-6 mb-6 text-left">
+    <!-- ================= INFO ================= -->
+    <div class="bg-gray-50 rounded-2xl p-4 sm:p-6 mb-6 text-left">
 
-      <div class="flex flex-col sm:flex-row sm:justify-between gap-4 text-sm">
-        <div>
-          <p class="text-gray-500">Order ID</p>
-          <p class="font-semibold">#{{ order.id }}</p>
-        </div>
-
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
         <div>
           <p class="text-gray-500">Payment Method</p>
-          <p class="font-semibold">{{ order.payment_method }}</p>
+          <p class="font-semibold">
+            {{ order.get_payment_method_display }}
+          </p>
         </div>
 
         <div>
           <p class="text-gray-500">Order Total</p>
-          <p class="font-semibold">₹{{ order.total }}</p>
+          <p class="font-semibold">
+            ₹{{ order.total_amount|floatformat:2 }}
+          </p>
+        </div>
+
+        <div>
+          <p class="text-gray-500">Payment Status</p>
+          <p class="font-semibold
+            {% if order.payment_status == 'SUCCESS' %}
+              text-green-600
+            {% elif order.payment_status == 'FAILED' %}
+              text-red-600
+            {% else %}
+              text-yellow-600
+            {% endif %}
+          ">
+            {% if order.payment_status == 'SUCCESS' %}
+              Paid
+            {% elif order.payment_status == 'FAILED' %}
+              Failed
+            {% else %}
+              Pending
+            {% endif %}
+          </p>
         </div>
       </div>
 
-      <div class="mt-4 flex justify-between text-sm">
-        <span class="text-gray-500">Payment Status</span>
-        <span class="font-semibold
-          {% if order.payment_status == 'SUCCESS' %}
-            text-green-600
-          {% elif order.payment_status == 'FAILED' %}
-            text-red-600
-          {% else %}
-            text-yellow-600
-          {% endif %}
-        ">
-          {{ order.payment_status }}
-        </span>
-      </div>
-
     </div>
 
-    <!-- NEXT STEPS -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+    <!-- ================= ACTIONS ================= -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
 
-      <a href="{% url 'orders:my_orders' %}"
-         class="block bg-black text-white py-3 rounded-xl font-medium hover:bg-gray-900 transition">
-        View Orders
+      <a
+        href="{% url 'orders:order_detail' order.id %}"
+        class="block bg-black text-white py-3 rounded-xl font-medium hover:bg-gray-900 transition min-h-[48px]"
+      >
+        View Order
       </a>
 
-      <a href="{% url 'pages:shop' %}"
-         class="block bg-gray-100 py-3 rounded-xl font-medium hover:bg-gray-200 transition">
+      {% if order.payment_status == "PENDING" %}
+      <a
+        href="{% url 'orders:payment' order.id %}"
+        class="block bg-yellow-100 py-3 rounded-xl font-medium hover:bg-yellow-200 transition min-h-[48px]"
+      >
+        Complete Payment
+      </a>
+      {% endif %}
+
+      <a
+        href="{% url 'pages:shop' %}"
+        class="block bg-gray-100 py-3 rounded-xl font-medium hover:bg-gray-200 transition min-h-[48px]"
+      >
         Continue Shopping
       </a>
 
-      <button
-        class="block bg-gray-100 py-3 rounded-xl font-medium hover:bg-gray-200 transition cursor-not-allowed">
-        Download Invoice
-      </button>
-
     </div>
 
-    <!-- TRUST -->
+    <!-- ================= TRUST ================= -->
     <div class="text-xs text-gray-500 space-y-1">
-      <p>📦 Your order will be processed shortly</p>
-      <p>🔔 You’ll receive updates on delivery status</p>
-      <p>↩ Easy returns available after delivery</p>
+      {% if order.payment_status == 'SUCCESS' %}
+        <p>📦 Your order is being prepared</p>
+        <p>🔔 You will receive delivery updates</p>
+      {% elif order.payment_status == 'FAILED' %}
+        <p>⚠ Payment could not be completed</p>
+        <p>💳 Please retry to avoid cancellation</p>
+      {% else %}
+        <p>⏳ Awaiting payment confirmation</p>
+        <p>🔒 Safe & secure transaction</p>
+      {% endif %}
     </div>
 
   </div>

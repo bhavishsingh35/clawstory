@@ -13,9 +13,23 @@ def cart_detail(request):
 
     cart_items = []
     total = 0
+    updated = False  # track auto-fixes
 
     for product in products:
-        qty = cart.get(str(product.id), 0)
+        pid = str(product.id)
+        qty = cart.get(pid, 0)
+
+        # 🔒 HARD STOCK VALIDATION
+        if product.stock == 0:
+            cart.pop(pid)
+            updated = True
+            continue
+
+        if qty > product.stock:
+            qty = product.stock
+            cart[pid] = qty
+            updated = True
+
         subtotal = product.price * qty
         total += subtotal
 
@@ -25,6 +39,9 @@ def cart_detail(request):
             "subtotal": subtotal,
         })
 
+    if updated:
+        request.session["cart"] = cart
+
     return render(request, "cart/cart.html", {
         "cart_items": cart_items,
         "total": total,
@@ -32,36 +49,43 @@ def cart_detail(request):
 
 
 # =========================
-# ADD TO CART
+# ADD TO CART (SAFE)
 # =========================
 @login_required
 def cart_add(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
     cart = request.session.get("cart", {})
-    product_id = str(product_id)
+    pid = str(product.id)
 
     qty = int(request.POST.get("quantity", 1))
 
-    if product_id in cart:
-        cart[product_id] += qty
-    else:
-        cart[product_id] = qty
+    # 🔒 STOCK ENFORCEMENT
+    if product.stock <= 0:
+        return redirect("cart:cart_detail")
 
+    current_qty = cart.get(pid, 0)
+    new_qty = min(current_qty + qty, product.stock)
+
+    cart[pid] = new_qty
     request.session["cart"] = cart
+
     return redirect("cart:cart_detail")
 
 
 # =========================
-# REMOVE ITEM
+# REMOVE ITEM (POST ONLY)
 # =========================
 @login_required
 def cart_remove(request, product_id):
+    if request.method != "POST":
+        return redirect("cart:cart_detail")
+
     cart = request.session.get("cart", {})
-    product_id = str(product_id)
+    pid = str(product_id)
 
-    if product_id in cart:
-        del cart[product_id]
-
+    cart.pop(pid, None)
     request.session["cart"] = cart
+
     return redirect("cart:cart_detail")
 
 
@@ -70,23 +94,24 @@ def cart_remove(request, product_id):
 # =========================
 @login_required
 def cart_update(request, product_id):
+    if request.method != "POST":
+        return redirect("cart:cart_detail")
+
     cart = request.session.get("cart", {})
-    product_id = str(product_id)
-
     product = get_object_or_404(Product, id=product_id)
-    current_qty = cart.get(product_id, 0)
+    pid = str(product.id)
 
+    current_qty = cart.get(pid, 0)
     action = request.POST.get("action")
 
-    if action == "inc":
-        if current_qty < product.stock:   # 🔥 STOCK CHECK
-            cart[product_id] = current_qty + 1
+    if action == "inc" and current_qty < product.stock:
+        cart[pid] = current_qty + 1
 
     elif action == "dec":
         if current_qty > 1:
-            cart[product_id] = current_qty - 1
+            cart[pid] = current_qty - 1
         else:
-            cart.pop(product_id, None)
+            cart.pop(pid, None)
 
     request.session["cart"] = cart
     return redirect("cart:cart_detail")

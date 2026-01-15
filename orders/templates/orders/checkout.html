@@ -1,76 +1,173 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Secure Checkout | ClawStory</title>
+{% extends "base.html" %}
+{% block title %}Secure Checkout | ClawStory{% endblock %}
 
-  <!-- SEO -->
-  <meta name="description" content="Secure checkout at ClawStory. Fast delivery, safe payments, easy returns.">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+{% block content %}
+<section
+  class="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-10 grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8"
+  itemscope
+  itemtype="https://schema.org/CheckoutPage"
+>
 
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-
-<body class="bg-gray-100">
-
-<main class="max-w-6xl mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-  <!-- LEFT COLUMN -->
+  <!-- ================= LEFT: CHECKOUT FORM ================= -->
   <section class="lg:col-span-2 space-y-6">
 
-    <!-- PAYMENT -->
-    <div class="bg-white rounded-2xl shadow p-6">
-      <h1 class="text-2xl font-bold mb-6">Checkout</h1>
+    <div class="bg-white rounded-2xl shadow p-4 sm:p-6">
+      <h1 class="text-xl sm:text-2xl font-bold mb-6">Secure Checkout</h1>
 
-      <form method="POST" action="{% url 'orders:create_order' %}" class="space-y-4">
+      <form
+        method="POST"
+        action="{% url 'orders:create_order' %}"
+        class="space-y-6"
+        novalidate
+        data-submit-lock
+      >
         {% csrf_token %}
 
-        <label class="flex gap-4 p-4 border rounded-xl cursor-pointer hover:border-black">
-          <input type="radio" name="payment_method" value="COD" required>
-          <div>
-            <p class="font-medium">Cash on Delivery</p>
-            <p class="text-sm text-gray-500">Pay when your order arrives</p>
-          </div>
-        </label>
+        <!-- ================= DELIVERY ADDRESS ================= -->
+        <div>
+          <h2 class="text-base sm:text-lg font-semibold mb-3">
+            Delivery Address
+          </h2>
 
-        <label class="flex gap-4 p-4 border rounded-xl cursor-pointer hover:border-black">
-          <input type="radio" name="payment_method" value="CARD">
-          <div>
-            <p class="font-medium">Credit / Debit Card</p>
-            <p class="text-sm text-gray-500">Visa, MasterCard, RuPay</p>
-          </div>
-        </label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <input
+              type="text"
+              name="full_name"
+              placeholder="Full Name"
+              required
+              minlength="3"
+              autocomplete="name"
+              class="border rounded-lg px-4 py-3 w-full focus:ring focus:ring-black/10"
+            />
 
-        <label class="flex gap-4 p-4 border rounded-xl cursor-pointer hover:border-black">
-          <input type="radio" name="payment_method" value="UPI">
-          <div>
-            <p class="font-medium">UPI</p>
-            <p class="text-sm text-gray-500">Google Pay, PhonePe, Paytm</p>
+            <input
+              type="tel"
+              name="phone"
+              placeholder="10-digit Mobile Number"
+              required
+              pattern="[0-9]{10}"
+              maxlength="10"
+              autocomplete="tel"
+              class="border rounded-lg px-4 py-3 w-full focus:ring focus:ring-black/10"
+            />
           </div>
-        </label>
 
+          <textarea
+            name="address_line"
+            placeholder="House no, Street, Area"
+            required
+            rows="3"
+            autocomplete="street-address"
+            class="border rounded-lg px-4 py-3 w-full mt-4 focus:ring focus:ring-black/10"
+          ></textarea>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+            <input
+              type="text"
+              name="city"
+              placeholder="City"
+              required
+              autocomplete="address-level2"
+              class="border rounded-lg px-4 py-3 w-full"
+            />
+
+            <input
+              type="text"
+              name="state"
+              placeholder="State"
+              required
+              autocomplete="address-level1"
+              class="border rounded-lg px-4 py-3 w-full"
+            />
+
+            <input
+              type="text"
+              name="pincode"
+              placeholder="6-digit Pincode"
+              required
+              pattern="[0-9]{6}"
+              maxlength="6"
+              autocomplete="postal-code"
+              class="border rounded-lg px-4 py-3 w-full"
+            />
+          </div>
+        </div>
+
+        <!-- ================= PAYMENT METHOD ================= -->
+        <div>
+          <h2 class="text-base sm:text-lg font-semibold mb-3">
+            Payment Method
+          </h2>
+
+          <label
+            class="flex gap-4 p-4 border rounded-xl cursor-pointer hover:border-black transition min-h-[56px]"
+          >
+            <input
+              type="radio"
+              name="payment_method"
+              value="COD"
+              required
+              class="mt-1"
+            />
+            <div>
+              <p class="font-medium">Cash on Delivery</p>
+              <p class="text-sm text-gray-500">
+                Pay when your order arrives
+              </p>
+            </div>
+          </label>
+
+          <label
+            class="flex gap-4 p-4 border rounded-xl cursor-pointer hover:border-black transition mt-3 min-h-[56px]"
+          >
+            <input
+              type="radio"
+              name="payment_method"
+              value="ONLINE"
+              class="mt-1"
+            />
+            <div>
+              <p class="font-medium">Online Payment</p>
+              <p class="text-sm text-gray-500">
+                UPI, Cards, Net Banking (Razorpay Secure)
+              </p>
+            </div>
+          </label>
+        </div>
+
+        <!-- ================= DESKTOP SUBMIT ================= -->
         <button
           type="submit"
-          class="w-full bg-black text-white py-3 rounded-xl font-semibold hover:bg-gray-900 transition"
+          class="hidden lg:block w-full bg-black text-white py-3 rounded-xl font-semibold hover:bg-gray-900 transition disabled:opacity-60"
         >
           Place Order Securely
         </button>
+
+        <p class="hidden lg:block text-xs text-gray-500 text-center">
+          🔒 Payments are processed securely via RBI-compliant gateway
+        </p>
+
       </form>
     </div>
 
   </section>
 
-  <!-- RIGHT COLUMN -->
-  <aside class="bg-white rounded-2xl shadow p-6 h-fit sticky top-6">
-
-    <h2 class="text-lg font-bold mb-4">Order Summary</h2>
+  <!-- ================= RIGHT: ORDER SUMMARY ================= -->
+  <aside
+    class="bg-white rounded-2xl shadow p-4 sm:p-6 h-fit lg:sticky lg:top-24"
+    itemscope
+    itemtype="https://schema.org/Order"
+  >
+    <h2 class="text-base sm:text-lg font-bold mb-4">
+      Order Summary
+    </h2>
 
     <div class="space-y-3 text-sm">
       {% for item in cart_items %}
-      <div class="flex justify-between">
-        <span>{{ item.quantity }} × {{ item.product.name }}</span>
+      <div class="flex justify-between gap-4">
+        <span class="line-clamp-1">
+          {{ item.quantity }} × {{ item.product.name }}
+        </span>
         <span>₹{{ item.line_total }}</span>
       </div>
       {% endfor %}
@@ -79,13 +176,20 @@
     <hr class="my-4">
 
     <div class="flex justify-between text-sm">
+      <span>Subtotal</span>
+      <span>₹{{ cart_subtotal }}</span>
+    </div>
+
+    <div class="flex justify-between text-sm">
       <span>Delivery</span>
       <span class="text-green-600">FREE</span>
     </div>
 
     <div class="flex justify-between font-bold text-lg mt-2">
       <span>Total</span>
-      <span>₹{{ cart_total }}</span>
+      <span itemprop="priceCurrency" content="INR">
+        ₹{{ cart_total }}
+      </span>
     </div>
 
     <div class="mt-6 text-xs text-gray-500 space-y-2">
@@ -93,10 +197,24 @@
       <p>🚚 Fast Delivery</p>
       <p>↩ Easy Returns</p>
     </div>
-
   </aside>
 
-</main>
+</section>
 
-</body>
-</html>
+<!-- ================= MOBILE STICKY CTA ================= -->
+<div
+  class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow p-3"
+>
+  <button
+    type="submit"
+    formmethod="post"
+    formaction="{% url 'orders:create_order' %}"
+    formnovalidate
+    class="w-full bg-black text-white py-3 rounded-xl font-semibold min-h-[48px]"
+    onclick="this.disabled=true; this.innerText='Processing…'; this.closest('form')?.submit();"
+  >
+    Pay ₹{{ cart_total }}
+  </button>
+</div>
+
+{% endblock %}

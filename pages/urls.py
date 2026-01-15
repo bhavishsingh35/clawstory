@@ -4,10 +4,17 @@ from . import views
 app_name = "pages"
 
 urlpatterns = [
-    path('', views.home, name='home'),
-    path("shop/",views.shop,name="shop"),
-    path("contact/",views.contact,name="contact"),
+    # Home
+    path("", views.home, name="home"),
+
+    # Shop & Products
+    path("shop/", views.shop, name="shop"),
+    path("products/<slug:slug>/", views.product_detail, name="product_detail"),
+
+    # Collections
     path("collections/", views.collection_list, name="collection_list"),
     path("collections/<slug:slug>/", views.collection_detail, name="collection_detail"),
-    path("product/<slug:slug>/", views.product_detail, name="product_detail"),
+
+    # Static pages
+    path("contact/", views.contact, name="contact"),
 ]

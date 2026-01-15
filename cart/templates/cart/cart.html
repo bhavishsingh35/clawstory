@@ -1,92 +1,91 @@
 {% extends "base.html" %}
+
 {% block title %}Your Cart | ClawStory{% endblock %}
+{% block meta_description %}
+Review items in your shopping cart at ClawStory. Secure checkout, fast delivery, easy returns.
+{% endblock %}
 
 {% block content %}
-<section class="max-w-7xl mx-auto px-4 py-8">
+<section class="max-w-7xl mx-auto px-4 py-10">
 
 <h1 class="text-3xl font-bold mb-8">Shopping Cart</h1>
 
 {% if cart_items %}
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-<!-- CART ITEMS -->
+<!-- ================= CART ITEMS ================= -->
 <div class="lg:col-span-2 space-y-6">
 
 {% for item in cart_items %}
-<div class="flex items-center gap-5 bg-white p-4 rounded-lg border">
+<div class="flex gap-5 bg-white p-4 rounded-xl border items-center">
 
-<!-- IMAGE -->
-<div class="w-28 aspect-[3/4] bg-gray-100 rounded-md overflow-hidden flex items-center justify-center">
-  <img
-    src="{{ item.product.image.url }}"
-    alt="{{ item.product.name }}"
-    class="w-full h-full object-contain"
-  />
-</div>
-<!-- INFO -->
-<div class="flex-1">
-  <h2 class="font-semibold text-lg">{{ item.product.name }}</h2>
-  <p class="text-gray-500">₹{{ item.product.price }}</p>
-
-  <!-- QTY CONTROLS -->
-  <div class="flex items-center gap-2 mt-3">
-
-    <!-- DECREMENT -->
-    <form method="post" action="{% url 'cart:cart_update' item.product.id %}">
-      {% csrf_token %}
-      <input type="hidden" name="action" value="dec">
-      <button
-        type="submit"
-        {% if item.quantity == 1 %}disabled{% endif %}
-        class="w-8 h-8 border rounded
-               {% if item.quantity == 1 %}opacity-40 cursor-not-allowed{% endif %}">
-        −
-      </button>
-    </form>
-
-    <!-- QTY -->
-    <span class="w-8 text-center font-semibold">
-      {{ item.quantity }}
-    </span>
-
-    <!-- INCREMENT -->
-    <form method="post" action="{% url 'cart:cart_update' item.product.id %}">
-      {% csrf_token %}
-      <input type="hidden" name="action" value="inc">
-      <button
-        type="submit"
-        {% if item.quantity >= item.product.stock %}disabled{% endif %}
-        class="w-8 h-8 border rounded
-               {% if item.quantity >= item.product.stock %}opacity-40 cursor-not-allowed{% endif %}">
-        +
-      </button>
-    </form>
-
-    <span class="text-xs text-gray-500 ml-2">
-      (Stock: {{ item.product.stock }})
-    </span>
+  <!-- IMAGE -->
+  <div class="w-28 aspect-[3/4] bg-gray-100 rounded-md overflow-hidden">
+    <img
+      src="{{ item.product.image.url }}"
+      alt="{{ item.product.name }}"
+      class="w-full h-full object-contain"
+      loading="lazy"
+    />
   </div>
 
-  <!-- REMOVE -->
-  <a
-    href="{% url 'cart:cart_remove' item.product.id %}"
-    class="text-sm text-red-600 mt-2 inline-block"
-  >
-    Remove
-  </a>
-</div>
+  <!-- INFO -->
+  <div class="flex-1">
+    <h2 class="font-semibold text-lg">{{ item.product.name }}</h2>
+    <p class="text-gray-500">₹{{ item.product.price }}</p>
 
-<!-- SUBTOTAL -->
-<div class="font-semibold text-lg">
-  ₹{{ item.subtotal }}
-</div>
+    <!-- QTY CONTROLS -->
+    <div class="flex items-center gap-2 mt-3">
+
+      <!-- DECREMENT -->
+      <form method="post" action="{% url 'cart:cart_update' item.product.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="dec">
+        <button
+          aria-label="Decrease quantity"
+          class="w-8 h-8 border rounded disabled:opacity-40"
+          {% if item.quantity == 1 %}disabled{% endif %}
+        >−</button>
+      </form>
+
+      <span class="w-8 text-center font-semibold">{{ item.quantity }}</span>
+
+      <!-- INCREMENT -->
+      <form method="post" action="{% url 'cart:cart_update' item.product.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="inc">
+        <button
+          aria-label="Increase quantity"
+          class="w-8 h-8 border rounded disabled:opacity-40"
+          {% if item.quantity >= item.product.stock %}disabled{% endif %}
+        >+</button>
+      </form>
+
+      <span class="text-xs text-gray-500 ml-2">
+        (Stock: {{ item.product.stock }})
+      </span>
+    </div>
+
+    <!-- REMOVE -->
+    <form method="post" action="{% url 'cart:cart_remove' item.product.id %}" class="mt-2">
+      {% csrf_token %}
+      <button class="text-sm text-red-600 hover:underline">
+        Remove
+      </button>
+    </form>
+  </div>
+
+  <!-- SUBTOTAL -->
+  <div class="font-semibold text-lg">
+    ₹{{ item.subtotal }}
+  </div>
 
 </div>
 {% endfor %}
 </div>
 
-<!-- SUMMARY -->
-<aside class="bg-white p-6 border rounded-lg h-fit sticky top-24">
+<!-- ================= SUMMARY ================= -->
+<aside class="bg-white p-6 rounded-xl border h-fit sticky top-24">
   <h2 class="text-xl font-semibold mb-4">Order Summary</h2>
 
   <div class="flex justify-between mb-2">
@@ -108,16 +107,35 @@
 
   <a
     href="{% url 'orders:checkout' %}"
-    class="block bg-black text-white text-center py-3 rounded hover:bg-gray-900"
+    class="block bg-black text-white text-center py-3 rounded-lg hover:bg-gray-900 transition"
   >
     Proceed to Checkout
   </a>
+
+  <!-- TRUST -->
+  <div class="mt-4 text-xs text-gray-500 space-y-1">
+    <p>✔ Secure checkout</p>
+    <p>✔ Easy returns</p>
+    <p>✔ Fast delivery</p>
+  </div>
 </aside>
 
 </div>
 
 {% else %}
-<p class="text-gray-500">Your cart is empty.</p>
+<!-- ================= EMPTY CART ================= -->
+<div class="bg-white rounded-xl p-12 text-center shadow">
+  <h2 class="text-2xl font-semibold mb-2">Your cart is empty</h2>
+  <p class="text-gray-500 mb-6">
+    Looks like you haven’t added anything yet.
+  </p>
+  <a
+    href="{% url 'pages:shop' %}"
+    class="inline-block bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-900"
+  >
+    Continue Shopping
+  </a>
+</div>
 {% endif %}
 
 </section>
