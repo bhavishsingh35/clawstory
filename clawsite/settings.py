@@ -26,7 +26,7 @@ if not SECRET_KEY:
 print("SECRET_KEY loaded:", bool(SECRET_KEY))
 
 # DEBUG = os.getenv("DEBUG", "False") == "True"
-DEBUG=False
+DEBUG=True
 # ALLOWED_HOSTS=["*"]
 
 ALLOWED_HOSTS = os.getenv(
