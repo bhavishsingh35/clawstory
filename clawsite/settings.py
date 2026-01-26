@@ -18,7 +18,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # =================================================
 # SECURITY
 # =================================================
-SECRET_KEY = os.getenv("SECRET_KEY","0z=5c9uxmyhg+hw%255)tka868@)276nz=-g7lz2=0d=vfa=73")
+SECRET_KEY = os.environ.get("SECRET_KEY")
+
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY is not set")
+
+print("SECRET_KEY loaded:", bool(SECRET_KEY))
 
 # DEBUG = os.getenv("DEBUG", "False") == "True"
 DEBUG=False
