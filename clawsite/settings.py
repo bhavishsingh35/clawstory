@@ -20,14 +20,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # =================================================
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
-DEBUG = os.getenv("DEBUG", "False") == "True"
+DEBUG = os.getenv("DEBUG") == "True"
 
 ALLOWED_HOSTS = [
     "clawstory.onrender.com",
-    ".onrender.com",
+    "www.clawstory.onrender.com",
 ]
 CSRF_TRUSTED_ORIGINS = [
     "https://clawstory.onrender.com",
+    "https://www.clawstory.onrender.com"
 ]
 
 
