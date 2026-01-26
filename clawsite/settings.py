@@ -24,13 +24,15 @@ DEBUG = os.getenv("DEBUG") == "True"
 
 ALLOWED_HOSTS = [
     "clawstory.onrender.com",
-    "www.clawstory.onrender.com",
+    ".onrender.com",
 ]
 CSRF_TRUSTED_ORIGINS = [
     "https://clawstory.onrender.com",
-    "https://www.clawstory.onrender.com"
 ]
-
+# =================================================
+# PRODUCTION SECURITY
+# =================================================
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # =================================================
 # APPLICATIONS
@@ -187,25 +189,6 @@ DEFAULT_FROM_EMAIL = os.getenv(
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
-
-
-# =================================================
-# PRODUCTION SECURITY
-# =================================================
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-USE_X_FORWARDED_HOST = True
-
-if not DEBUG:
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    X_FRAME_OPTIONS = "DENY"
 
 
 # =================================================
