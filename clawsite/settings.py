@@ -18,9 +18,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # =================================================
 # SECURITY
 # =================================================
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY","0z=5c9uxmyhg+hw%255)tka868@)276nz=-g7lz2=0d=vfa=73")
 
-DEBUG = os.getenv("DEBUG", "False") == "True"
+# DEBUG = os.getenv("DEBUG", "False") == "True"
+DEBUG=False
+# ALLOWED_HOSTS=["*"]
 
 ALLOWED_HOSTS = os.getenv(
     "ALLOWED_HOSTS",
