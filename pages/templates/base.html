@@ -1,25 +1,43 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
 
-  <!-- Responsive -->
+  <!-- ================= CORE ================= -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- SEO -->
-  <title>{% block title %}ClawStory – Premium Online Shopping{% endblock %}</title>
-  <meta name="description" content="{% block meta_description %}Shop premium fashion and lifestyle products at ClawStory with fast delivery and best prices.{% endblock %}">
-  <meta name="keywords" content="clawstory, online shopping, ecommerce, fashion, clothes, india shopping">
-  <meta name="author" content="ClawStory">
+  <!-- ================= SEO ================= -->
+  <title>{% block title %}The ClawStory – Premium Men & Women Fashion Online in India{% endblock %}</title>
 
-  <!-- Open Graph -->
-  <meta property="og:title" content="ClawStory – Premium Online Shopping">
-  <meta property="og:description" content="Shop premium fashion with fast delivery">
+  <meta name="description"
+        content="{% block meta_description %}Shop premium men’s & women’s fashion at The ClawStory. Timeless style, quality fabrics, easy returns & fast delivery across India.{% endblock %}">
+
+  <meta name="robots" content="{{ meta_robots|default:'index,follow' }}">
+  <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+  <meta name="author" content="The ClawStory">
+
+  <!-- ================= SOCIAL ================= -->
+  <meta property="og:title" content="The ClawStory – Wear Your Story">
+  <meta property="og:description" content="Premium fashion crafted for confidence. Discover your style at The ClawStory.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="{{ request.build_absolute_uri }}">
-  <meta property="og:image" content="/static/seo-banner.jpg">
+  <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+  <meta property="og:image" content="{% static 'seo/og-default.jpg' %}">
+  <meta name="twitter:card" content="summary_large_image">
 
-  <!-- Tailwind -->
+  <!-- ================= STRUCTURED DATA ================= -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "The ClawStory",
+    "url": "{{ request.scheme }}://{{ request.get_host }}",
+    "logo": "{% static 'images/the-clawstory-logo.png' %}"
+  }
+  </script>
+
+  <!-- ================= STYLES ================= -->
+  <!-- NOTE: Replace CDN Tailwind with compiled CSS in production -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
@@ -29,118 +47,156 @@
   {% block extra_head %}{% endblock %}
 </head>
 
-<body class="bg-gray-100 text-gray-900 flex flex-col min-h-screen">
+<body class="bg-[#f6f5f2] text-gray-900 flex flex-col min-h-screen">
 
-<!-- ================= NAVBAR ================= -->
-<header class="bg-white shadow sticky top-0 z-50">
-  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+<h1 class="sr-only">
+  The ClawStory – Premium Online Fashion Store for Men & Women in India
+</h1>
 
-    <!-- Logo -->
-    <a href="{% url 'pages:home' %}" class="text-xl font-extrabold tracking-tight">
-      Claw<span class="text-blue-600">Story</span>
+<!-- ================= HEADER ================= -->
+<header class="bg-[#1a1a1a] text-[#f5f1e8] sticky top-0 z-50">
+
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center gap-6">
+
+    <!-- LOGO -->
+    <a href="{% url 'pages:home' %}" class="flex items-center">
+      <img src="{% static 'images/the-clawstory-logo.png' %}"
+           alt="The ClawStory Logo"
+           width="120"
+           height="40"
+           loading="eager"
+           class="object-contain">
     </a>
 
-    <!-- Desktop Search -->
-    <form action="{% url 'pages:shop' %}" method="get" class="hidden md:block flex-1">
-      <input
-        type="search"
-        name="q"
-        aria-label="Search products"
-        placeholder="Search products, brands and more"
-        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-      >
+    <!-- SEARCH (DESKTOP) -->
+    <form action="{% url 'pages:shop' %}" method="get"
+          class="hidden md:block flex-1 relative"
+          role="search"
+          aria-label="Site search">
+
+      <label for="search-input" class="sr-only">Search products</label>
+
+      <input type="search"
+             id="search-input"
+             name="q"
+             placeholder="Search TheClawStory.in"
+             value="{{ request.GET.q|default_if_none:'' }}"
+             class="w-full px-4 pr-12 py-2 rounded-md text-black
+                    focus:ring-2 focus:ring-[#c7b27c]
+                    focus:outline-none">
+
+      <button type="submit"
+              aria-label="Search"
+              class="absolute right-3 top-1/2 -translate-y-1/2
+                     text-gray-500 hover:text-[#c7b27c] transition">
+        🔍
+      </button>
     </form>
 
-    <!-- Right Menu -->
-    <nav class="flex items-center gap-4 text-sm">
-      <a href="{% url 'cart:cart_detail' %}" aria-label="Cart">
-        🛒 <span class="font-semibold">({{ request.session.cart|length|default:0 }})</span>
+    <!-- NAV -->
+    <nav class="flex items-center gap-6 text-sm" aria-label="Primary navigation">
+
+      <a href="{% url 'cart:cart_detail' %}" class="relative hover:text-[#c7b27c] transition">
+        🛒 <span class="ml-1">
+          ({{ request.session.cart|length|default:0 }})
+        </span>
       </a>
 
       {% if user.is_authenticated %}
-        <span class="hidden md:inline">Hi, {{ user.username }}</span>
-        <a href="{% url 'orders:my_orders' %}" class="hidden md:inline hover:underline">Orders</a>
+        <span class="hidden md:inline text-gray-300">
+          Hi {{ user.username }}
+        </span>
+
+        <a href="{% url 'orders:my_orders' %}"
+           class="text-gray-300 hover:text-[#c7b27c] transition">
+          Orders
+        </a>
+
         <form method="post" action="{% url 'accounts:logout' %}">
           {% csrf_token %}
-          <button class="text-red-600 hover:underline">Logout</button>
+          <button type="submit"
+                  class="text-gray-400 hover:text-[#c7b27c] transition">
+            Logout
+          </button>
         </form>
       {% else %}
-        <a href="{% url 'accounts:login' %}" class="hover:underline">Login</a>
+        <a href="{% url 'accounts:login' %}"
+           class="text-gray-300 hover:text-[#c7b27c] transition">
+          Login
+        </a>
       {% endif %}
     </nav>
   </div>
 
-  <!-- Mobile Search -->
-  <div class="md:hidden px-4 pb-3">
-    <form action="{% url 'pages:shop' %}" method="get">
-      <input
-        type="search"
-        name="q"
-        placeholder="Search products..."
-        class="w-full px-4 py-2 border rounded-lg"
-      >
+  <!-- MOBILE SEARCH -->
+  <div class="md:hidden px-4 pb-4">
+    <form action="{% url 'pages:shop' %}" method="get" role="search">
+      <label class="sr-only">Search products</label>
+      <input type="search"
+             name="q"
+             placeholder="Search fashion..."
+             class="w-full px-4 py-2 rounded-md text-black focus:outline-none">
     </form>
   </div>
 
-  <!-- Category Bar -->
-  <div class="bg-gray-50 border-t hidden md:block">
-    <div class="max-w-7xl mx-auto px-4 py-2 flex gap-6 text-sm">
-      <a href="{% url 'pages:home' %}" class="hover:font-semibold">Home</a>
-      <a href="{% url 'pages:shop' %}" class="hover:font-semibold">Shop</a>
-      <a href="{% url 'pages:collection_list' %}" class="hover:font-semibold">Collections</a>
-      <a href="{% url 'pages:contact' %}" class="hover:font-semibold">Contact</a>
+  <!-- CATEGORY BAR -->
+  <div class="border-t border-gray-700 hidden md:block">
+    <div class="max-w-7xl mx-auto px-4 py-2 flex gap-10 text-sm uppercase tracking-wide text-gray-400">
+      <a href="{% url 'pages:home' %}" class="hover:text-[#c7b27c]">Home</a>
+      <a href="{% url 'pages:shop' %}" class="hover:text-[#c7b27c]">Shop</a>
+      <a href="{% url 'pages:collection_list' %}" class="hover:text-[#c7b27c]">Collections</a>
+      <a href="{% url 'pages:contact' %}" class="hover:text-[#c7b27c]">Contact</a>
     </div>
   </div>
 </header>
 
 <!-- ================= MAIN ================= -->
-<main class="flex-1 max-w-7xl mx-auto w-full px-4 py-6">
+<main class="bg-[#111111] flex-1 max-w-7xl mx-auto w-full px-4 py-10">
   {% block content %}{% endblock %}
 </main>
 
 <!-- ================= FOOTER ================= -->
-<footer class="bg-gray-900 text-gray-300 mt-12">
-  <div class="max-w-7xl mx-auto px-4 py-10 grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
+<footer class="bg-[#111111] text-gray-400">
+
+  <div class="max-w-7xl mx-auto px-4 py-12 grid grid-cols-2 md:grid-cols-4 gap-10 text-sm">
 
     <section>
-      <h3 class="text-white font-bold mb-2">ClawStory</h3>
-      <p>Premium fashion & lifestyle shopping platform.</p>
+      <h3 class="text-[#f5f1e8] font-semibold text-lg mb-3">The ClawStory</h3>
+      <p>Premium fashion crafted for confidence. Discover timeless men’s & women’s styles designed to last.</p>
     </section>
 
     <section>
-      <h4 class="text-white font-semibold mb-2">Customer</h4>
-      <ul class="space-y-1">
-        <li><a href="#" class="hover:underline">Help Center</a></li>
-        <li><a href="#" class="hover:underline">Returns</a></li>
-        <li><a href="#" class="hover:underline">Track Order</a></li>
+      <h4 class="text-[#f5f1e8] font-semibold mb-3">Customer</h4>
+      <ul class="space-y-2">
+        <li><a href="{% url 'pages:help_center' %}" class="hover:underline">Help Center</a></li>
+        <li><a href="{% url 'pages:returns' %}" class="hover:underline">Returns</a></li>
+        <li><a href="{% url 'pages:track_order' %}" class="hover:underline">Track Order</a></li>
       </ul>
     </section>
 
     <section>
-      <h4 class="text-white font-semibold mb-2">Company</h4>
-      <ul class="space-y-1">
-        <li><a href="#" class="hover:underline">About Us</a></li>
-        <li><a href="#" class="hover:underline">Careers</a></li>
+      <h4 class="text-[#f5f1e8] font-semibold mb-3">Company</h4>
+      <ul class="space-y-2">
+        <li><a href="{% url 'pages:about_us' %}" class="hover:underline">About Us</a></li>
+        <li><a href="{% url 'pages:careers' %}" class="hover:underline">Careers</a></li>
         <li><a href="{% url 'pages:contact' %}" class="hover:underline">Contact</a></li>
       </ul>
     </section>
 
     <section>
-      <h4 class="text-white font-semibold mb-2">Legal</h4>
-      <ul class="space-y-1">
-        <li><a href="#" class="hover:underline">Privacy Policy</a></li>
-        <li><a href="#" class="hover:underline">Terms & Conditions</a></li>
+      <h4 class="text-[#f5f1e8] font-semibold mb-3">Legal</h4>
+      <ul class="space-y-2">
+        <li><a href="{% url 'pages:privacy_policy' %}" class="hover:underline">Privacy Policy</a></li>
+        <li><a href="{% url 'pages:terms_conditions' %}" class="hover:underline">Terms & Conditions</a></li>
       </ul>
     </section>
-
   </div>
 
-  <div class="text-center text-xs border-t border-gray-700 py-4">
-    © 2026 ClawStory. All rights reserved.
+  <div class="border-t border-gray-800 text-center py-4 text-xs">
+    © {% now "Y" %} The ClawStory. All rights reserved.
   </div>
 </footer>
 
 {% block extra_js %}{% endblock %}
-
 </body>
 </html>

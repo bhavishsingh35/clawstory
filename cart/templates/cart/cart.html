@@ -1,142 +1,199 @@
 {% extends "base.html" %}
 
-{% block title %}Your Cart | ClawStory{% endblock %}
-{% block meta_description %}
-Review items in your shopping cart at ClawStory. Secure checkout, fast delivery, easy returns.
-{% endblock %}
+{% block title %}Your Cart | The ClawStory{% endblock %}
+
+{% block meta_description %}Review items in your shopping cart at The ClawStory. Secure checkout, fast delivery, and easy returns.{% endblock %}
 
 {% block content %}
-<section class="max-w-7xl mx-auto px-4 py-10">
+<div class="-mx-4 -my-10 px-4 py-16 bg-[#1a1a1a]">
 
-<h1 class="text-3xl font-bold mb-8">Shopping Cart</h1>
+<section class="max-w-7xl mx-auto" aria-labelledby="cart-heading">
 
-{% if cart_items %}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+  <!-- =====================================================
+       PAGE HEADER
+  ====================================================== -->
+  <header class="mb-10">
+    <h1 id="cart-heading"
+        class="text-3xl md:text-4xl font-extrabold text-white tracking-wide">
+      Shopping Cart
+    </h1>
+  </header>
 
-<!-- ================= CART ITEMS ================= -->
-<div class="lg:col-span-2 space-y-6">
+  {% if cart_items %}
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
 
-{% for item in cart_items %}
-<div class="flex gap-5 bg-white p-4 rounded-xl border items-center">
+    <!-- =====================================================
+         CART ITEMS
+    ====================================================== -->
+    <div class="lg:col-span-2 space-y-6" aria-live="polite">
 
-  <!-- IMAGE -->
-  <div class="w-28 aspect-[3/4] bg-gray-100 rounded-md overflow-hidden">
-    <img
-      src="{{ item.product.image.url }}"
-      alt="{{ item.product.name }}"
-      class="w-full h-full object-contain"
-      loading="lazy"
-    />
-  </div>
+      {% for item in cart_items %}
+      <article
+        class="flex gap-5 bg-white p-5 rounded-xl shadow-sm items-center"
+        aria-label="Cart item {{ item.product.name }}"
+      >
 
-  <!-- INFO -->
-  <div class="flex-1">
-    <h2 class="font-semibold text-lg">{{ item.product.name }}</h2>
-    <p class="text-gray-500">₹{{ item.product.price }}</p>
+        <!-- IMAGE -->
+        <div class="w-28 aspect-[3/4] bg-gray-100 rounded-md overflow-hidden">
+          {% if item.product.image_url %}
+            <img
+              src="{{ item.product.image_url }}"
+              alt="{{ item.product.name }}"
+              class="w-full h-full object-contain"
+              loading="lazy"
+              width="300"
+              height="400"
+            />
+          {% else %}
+            <div class="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+              No image
+            </div>
+          {% endif %}
+        </div>
 
-    <!-- QTY CONTROLS -->
-    <div class="flex items-center gap-2 mt-3">
+        <!-- INFO -->
+        <div class="flex-1">
+          <h2 class="font-semibold text-lg text-gray-900">
+            {{ item.product.name }}
+          </h2>
 
-      <!-- DECREMENT -->
-      <form method="post" action="{% url 'cart:cart_update' item.product.id %}">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="dec">
-        <button
-          aria-label="Decrease quantity"
-          class="w-8 h-8 border rounded disabled:opacity-40"
-          {% if item.quantity == 1 %}disabled{% endif %}
-        >−</button>
-      </form>
+          <p class="text-gray-500">
+            ₹{{ item.price }}
+          </p>
 
-      <span class="w-8 text-center font-semibold">{{ item.quantity }}</span>
+          <!-- QTY CONTROLS -->
+          <div class="flex items-center gap-2 mt-3">
 
-      <!-- INCREMENT -->
-      <form method="post" action="{% url 'cart:cart_update' item.product.id %}">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="inc">
-        <button
-          aria-label="Increase quantity"
-          class="w-8 h-8 border rounded disabled:opacity-40"
-          {% if item.quantity >= item.product.stock %}disabled{% endif %}
-        >+</button>
-      </form>
+            <!-- DECREMENT -->
+            <form method="post" action="{% url 'cart:cart_update' item.product.id %}">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="dec">
+              <button
+                type="submit"
+                aria-label="Decrease quantity"
+                class="w-8 h-8 border rounded hover:bg-gray-100 disabled:opacity-40"
+                {% if item.quantity == 1 %}disabled{% endif %}
+              >
+                −
+              </button>
+            </form>
 
-      <span class="text-xs text-gray-500 ml-2">
-        (Stock: {{ item.product.stock }})
-      </span>
+            <span class="w-8 text-center font-semibold text-gray-900">
+              {{ item.quantity }}
+            </span>
+
+            <!-- INCREMENT -->
+            <form method="post" action="{% url 'cart:cart_update' item.product.id %}">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="inc">
+              <button
+                type="submit"
+                aria-label="Increase quantity"
+                class="w-8 h-8 border rounded hover:bg-gray-100 disabled:opacity-40"
+                {% if item.quantity >= item.product.stock %}disabled{% endif %}
+              >
+                +
+              </button>
+            </form>
+
+            <span class="text-xs text-gray-500 ml-2">
+              (Stock: {{ item.product.stock }})
+            </span>
+          </div>
+
+          <!-- REMOVE -->
+          <form method="post"
+                action="{% url 'cart:cart_remove' item.product.id %}"
+                class="mt-2">
+            {% csrf_token %}
+            <button
+              type="submit"
+              class="text-sm text-red-600 hover:underline"
+            >
+              Remove
+            </button>
+          </form>
+        </div>
+
+        <!-- SUBTOTAL -->
+        <div class="font-semibold text-lg text-gray-900">
+          ₹{{ item.subtotal }}
+        </div>
+
+      </article>
+      {% endfor %}
     </div>
 
-    <!-- REMOVE -->
-    <form method="post" action="{% url 'cart:cart_remove' item.product.id %}" class="mt-2">
-      {% csrf_token %}
-      <button class="text-sm text-red-600 hover:underline">
-        Remove
-      </button>
-    </form>
+    <!-- =====================================================
+         ORDER SUMMARY
+    ====================================================== -->
+    <aside
+      class="bg-white p-6 rounded-xl shadow-sm h-fit sticky top-24"
+      aria-labelledby="order-summary-heading"
+    >
+      <h2 id="order-summary-heading" class="text-xl font-semibold mb-4">
+        Order Summary
+      </h2>
+
+      <div class="flex justify-between mb-2 text-gray-700">
+        <span>Subtotal</span>
+        <span>₹{{ total }}</span>
+      </div>
+
+      <div class="flex justify-between mb-2 text-gray-700">
+        <span>Delivery</span>
+        <span class="text-green-600">FREE</span>
+      </div>
+
+      <hr class="my-4">
+
+      <div class="flex justify-between font-bold text-lg mb-6">
+        <span>Total</span>
+        <span>₹{{ total }}</span>
+      </div>
+
+      <a
+        href="{% url 'orders:checkout' %}"
+        class="block bg-[#c7b27c] hover:bg-[#bfa764]
+               text-black text-center py-3 rounded-lg
+               font-semibold transition
+               focus:outline-none focus:ring-2 focus:ring-[#c7b27c]"
+      >
+        Proceed to Checkout
+      </a>
+
+      <!-- TRUST -->
+      <div class="mt-4 text-xs text-gray-500 space-y-1">
+        <p>✔ Secure checkout</p>
+        <p>✔ Easy returns</p>
+        <p>✔ Fast delivery</p>
+      </div>
+    </aside>
+
   </div>
 
-  <!-- SUBTOTAL -->
-  <div class="font-semibold text-lg">
-    ₹{{ item.subtotal }}
+  {% else %}
+  <!-- =====================================================
+       EMPTY CART
+  ====================================================== -->
+  <div class="bg-white rounded-xl p-12 text-center shadow-sm max-w-xl mx-auto">
+    <h2 class="text-2xl font-semibold mb-2 text-gray-900">
+      Your cart is empty
+    </h2>
+    <p class="text-gray-500 mb-6">
+      Looks like you haven’t added anything yet.
+    </p>
+    <a
+      href="{% url 'pages:shop' %}"
+      class="inline-block bg-[#c7b27c] hover:bg-[#bfa764]
+             text-black px-6 py-3 rounded-lg
+             font-semibold transition"
+    >
+      Continue Shopping
+    </a>
   </div>
-
-</div>
-{% endfor %}
-</div>
-
-<!-- ================= SUMMARY ================= -->
-<aside class="bg-white p-6 rounded-xl border h-fit sticky top-24">
-  <h2 class="text-xl font-semibold mb-4">Order Summary</h2>
-
-  <div class="flex justify-between mb-2">
-    <span>Subtotal</span>
-    <span>₹{{ total }}</span>
-  </div>
-
-  <div class="flex justify-between mb-2">
-    <span>Delivery</span>
-    <span class="text-green-600">FREE</span>
-  </div>
-
-  <hr class="my-4">
-
-  <div class="flex justify-between font-bold text-lg mb-6">
-    <span>Total</span>
-    <span>₹{{ total }}</span>
-  </div>
-
-  <a
-    href="{% url 'orders:checkout' %}"
-    class="block bg-black text-white text-center py-3 rounded-lg hover:bg-gray-900 transition"
-  >
-    Proceed to Checkout
-  </a>
-
-  <!-- TRUST -->
-  <div class="mt-4 text-xs text-gray-500 space-y-1">
-    <p>✔ Secure checkout</p>
-    <p>✔ Easy returns</p>
-    <p>✔ Fast delivery</p>
-  </div>
-</aside>
-
-</div>
-
-{% else %}
-<!-- ================= EMPTY CART ================= -->
-<div class="bg-white rounded-xl p-12 text-center shadow">
-  <h2 class="text-2xl font-semibold mb-2">Your cart is empty</h2>
-  <p class="text-gray-500 mb-6">
-    Looks like you haven’t added anything yet.
-  </p>
-  <a
-    href="{% url 'pages:shop' %}"
-    class="inline-block bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-900"
-  >
-    Continue Shopping
-  </a>
-</div>
-{% endif %}
+  {% endif %}
 
 </section>
+</div>
 {% endblock %}

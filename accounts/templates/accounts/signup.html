@@ -2,40 +2,51 @@
 {% block title %}Create Account | ClawStory{% endblock %}
 
 {% block content %}
-<section class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+<!-- Prevent back-button cache issues -->
+<meta http-equiv="Cache-Control" content="no-store" />
+<meta http-equiv="Pragma" content="no-cache" />
 
-  <div class="w-full max-w-md bg-white rounded-xl shadow-lg border p-6 sm:p-8">
+<div class="min-h-screen flex items-center justify-center bg-[#1a1a1a] px-4">
 
-    <!-- HEADER -->
+  <div class="w-full max-w-md bg-[#111111] rounded-2xl border border-gray-800 p-6 sm:p-8 text-white">
+
+    <!-- ================= HEADER ================= -->
     <div class="text-center mb-6">
-      <h1 class="text-2xl font-bold">Create your account</h1>
-      <p class="text-sm text-gray-500 mt-1">
+      <h1 class="text-2xl font-extrabold tracking-tight">
+        Create your account
+      </h1>
+      <p class="text-sm text-gray-400 mt-1">
         Faster checkout • Order tracking • Secure payments
       </p>
     </div>
 
-    <!-- FORM -->
-    <form method="post" class="space-y-4">
+    <!-- ================= FORM ================= -->
+    <form method="post" class="space-y-4" novalidate>
       {% csrf_token %}
 
-      <!-- ERRORS -->
+      <!-- NON FIELD ERRORS -->
       {% if form.non_field_errors %}
-        <p class="text-sm text-red-600 text-center">
-          {{ form.non_field_errors }}
-        </p>
+        <div class="text-sm px-3 py-2 rounded-md bg-red-900/30 text-red-400 border border-red-800">
+          {{ form.non_field_errors|striptags }}
+        </div>
       {% endif %}
 
       <!-- USERNAME -->
       <div>
-        <label class="block text-sm font-medium mb-1">Username</label>
+        <label class="block text-sm font-medium mb-1 text-gray-300">
+          Username
+        </label>
         <input
           type="text"
           name="username"
+          value="{{ form.username.value|default_if_none:'' }}"
           required
-          class="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+          autocomplete="username"
+          class="w-full rounded-md bg-[#1a1a1a] border border-gray-700 px-3 py-2 text-white
+                 placeholder-gray-500 focus:ring-2 focus:ring-[#c7b27c] focus:outline-none"
         >
         {% if form.username.errors %}
-          <p class="text-xs text-red-600 mt-1">
+          <p class="text-xs text-red-400 mt-1">
             {{ form.username.errors|striptags }}
           </p>
         {% endif %}
@@ -43,15 +54,20 @@
 
       <!-- EMAIL -->
       <div>
-        <label class="block text-sm font-medium mb-1">Email</label>
+        <label class="block text-sm font-medium mb-1 text-gray-300">
+          Email address
+        </label>
         <input
           type="email"
           name="email"
+          value="{{ form.email.value|default_if_none:'' }}"
           required
-          class="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+          autocomplete="email"
+          class="w-full rounded-md bg-[#1a1a1a] border border-gray-700 px-3 py-2 text-white
+                 placeholder-gray-500 focus:ring-2 focus:ring-[#c7b27c] focus:outline-none"
         >
         {% if form.email.errors %}
-          <p class="text-xs text-red-600 mt-1">
+          <p class="text-xs text-red-400 mt-1">
             {{ form.email.errors|striptags }}
           </p>
         {% endif %}
@@ -59,15 +75,19 @@
 
       <!-- PASSWORD -->
       <div>
-        <label class="block text-sm font-medium mb-1">Password</label>
+        <label class="block text-sm font-medium mb-1 text-gray-300">
+          Password
+        </label>
         <input
           type="password"
           name="password1"
           required
-          class="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+          autocomplete="new-password"
+          class="w-full rounded-md bg-[#1a1a1a] border border-gray-700 px-3 py-2 text-white
+                 focus:ring-2 focus:ring-[#c7b27c] focus:outline-none"
         >
         {% if form.password1.errors %}
-          <p class="text-xs text-red-600 mt-1">
+          <p class="text-xs text-red-400 mt-1">
             {{ form.password1.errors|striptags }}
           </p>
         {% endif %}
@@ -75,42 +95,60 @@
 
       <!-- CONFIRM PASSWORD -->
       <div>
-        <label class="block text-sm font-medium mb-1">Confirm Password</label>
+        <label class="block text-sm font-medium mb-1 text-gray-300">
+          Confirm password
+        </label>
         <input
           type="password"
           name="password2"
           required
-          class="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+          autocomplete="new-password"
+          class="w-full rounded-md bg-[#1a1a1a] border border-gray-700 px-3 py-2 text-white
+                 focus:ring-2 focus:ring-[#c7b27c] focus:outline-none"
         >
         {% if form.password2.errors %}
-          <p class="text-xs text-red-600 mt-1">
+          <p class="text-xs text-red-400 mt-1">
             {{ form.password2.errors|striptags }}
           </p>
         {% endif %}
       </div>
 
+      <!-- PASSWORD RULES -->
+      <div class="text-xs text-gray-400 space-y-1">
+        <p>✔ Minimum 8 characters</p>
+        <p>✔ Cannot be common or similar to username</p>
+        <p>✔ Use letters & numbers for better security</p>
+      </div>
+
       <!-- SUBMIT -->
       <button
         type="submit"
-        class="w-full bg-black text-white py-2.5 rounded-md font-semibold hover:bg-gray-900 transition"
+        class="w-full bg-[#c7b27c] text-black py-2.5 rounded-md font-semibold
+               hover:bg-[#bfa764] transition min-h-[44px]"
       >
         Create Account
       </button>
     </form>
 
-    <!-- LOGIN -->
-    <p class="mt-6 text-center text-sm text-gray-600">
+    <!-- ================= LOGIN ================= -->
+    <p class="mt-6 text-center text-sm text-gray-400">
       Already have an account?
-      <a href="{% url 'accounts:login' %}" class="font-medium text-black hover:underline">
+      <a
+        href="{% url 'accounts:login' %}"
+        class="text-[#c7b27c] hover:underline font-medium"
+      >
         Login
       </a>
     </p>
 
-    <!-- TRUST -->
-    <p class="mt-4 text-xs text-gray-400 text-center">
-      By continuing, you agree to ClawStory’s Terms & Privacy Policy
+    <!-- ================= TRUST ================= -->
+    <p class="mt-4 text-xs text-gray-500 text-center">
+      By continuing, you agree to ClawStory’s
+      <a href="#" class="underline">Terms</a> &
+      <a href="#" class="underline">Privacy Policy</a>.
     </p>
 
   </div>
-</section>
+
+</div>
 {% endblock %}

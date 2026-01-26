@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Secure Checkout | ClawStory{% endblock %}
 
+{% block meta_description %}
+Complete your secure checkout at ClawStory. Fast delivery, secure Stripe payments, easy returns.
+{% endblock %}
+
 {% block content %}
 <section
   class="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-10 grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8"
@@ -15,11 +19,11 @@
       <h1 class="text-xl sm:text-2xl font-bold mb-6">Secure Checkout</h1>
 
       <form
+        id="checkout-form"
         method="POST"
         action="{% url 'orders:create_order' %}"
         class="space-y-6"
         novalidate
-        data-submit-lock
       >
         {% csrf_token %}
 
@@ -37,7 +41,7 @@
               required
               minlength="3"
               autocomplete="name"
-              class="border rounded-lg px-4 py-3 w-full focus:ring focus:ring-black/10"
+              class="border rounded-lg px-4 py-3 w-full focus:ring-2 focus:ring-black/10"
             />
 
             <input
@@ -48,7 +52,7 @@
               pattern="[0-9]{10}"
               maxlength="10"
               autocomplete="tel"
-              class="border rounded-lg px-4 py-3 w-full focus:ring focus:ring-black/10"
+              class="border rounded-lg px-4 py-3 w-full focus:ring-2 focus:ring-black/10"
             />
           </div>
 
@@ -58,7 +62,7 @@
             required
             rows="3"
             autocomplete="street-address"
-            class="border rounded-lg px-4 py-3 w-full mt-4 focus:ring focus:ring-black/10"
+            class="border rounded-lg px-4 py-3 w-full mt-4 focus:ring-2 focus:ring-black/10"
           ></textarea>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
@@ -99,52 +103,40 @@
             Payment Method
           </h2>
 
-          <label
-            class="flex gap-4 p-4 border rounded-xl cursor-pointer hover:border-black transition min-h-[56px]"
-          >
-            <input
-              type="radio"
-              name="payment_method"
-              value="COD"
-              required
-              class="mt-1"
-            />
+          <label class="flex gap-4 p-4 border rounded-xl cursor-pointer hover:border-black transition has-[:checked]:border-black">
+            <input type="radio" name="payment_method" value="COD" required>
             <div>
               <p class="font-medium">Cash on Delivery</p>
+              <p class="text-sm text-gray-500">Pay when your order arrives</p>
+            </div>
+          </label>
+
+          <label class="flex gap-4 p-4 border rounded-xl cursor-pointer hover:border-black transition mt-3 has-[:checked]:border-black">
+            <input type="radio" name="payment_method" value="ONLINE">
+            <div>
+              <p class="font-medium">Online Payment</p>
               <p class="text-sm text-gray-500">
-                Pay when your order arrives
+                UPI, Cards, Net Banking, Wallets (powered by Stripe)
               </p>
             </div>
           </label>
 
-          <label
-            class="flex gap-4 p-4 border rounded-xl cursor-pointer hover:border-black transition mt-3 min-h-[56px]"
-          >
-            <input
-              type="radio"
-              name="payment_method"
-              value="ONLINE"
-              class="mt-1"
-            />
-            <div>
-              <p class="font-medium">Online Payment</p>
-              <p class="text-sm text-gray-500">
-                UPI, Cards, Net Banking (Razorpay Secure)
-              </p>
-            </div>
-          </label>
+          <p class="text-xs text-gray-500 mt-2">
+            🔒 Online payments are processed securely via Stripe.  
+            Payment confirmation may take a few seconds.
+          </p>
         </div>
 
         <!-- ================= DESKTOP SUBMIT ================= -->
         <button
           type="submit"
-          class="hidden lg:block w-full bg-black text-white py-3 rounded-xl font-semibold hover:bg-gray-900 transition disabled:opacity-60"
+          class="hidden lg:block w-full bg-black text-white py-3 rounded-xl font-semibold hover:bg-gray-900 transition"
         >
-          Place Order Securely
+          Place Order
         </button>
 
         <p class="hidden lg:block text-xs text-gray-500 text-center">
-          🔒 Payments are processed securely via RBI-compliant gateway
+          🔐 Secure, PCI-DSS compliant payment processing
         </p>
 
       </form>
@@ -187,9 +179,7 @@
 
     <div class="flex justify-between font-bold text-lg mt-2">
       <span>Total</span>
-      <span itemprop="priceCurrency" content="INR">
-        ₹{{ cart_total }}
-      </span>
+      <span>₹{{ cart_total }}</span>
     </div>
 
     <div class="mt-6 text-xs text-gray-500 space-y-2">
@@ -202,18 +192,13 @@
 </section>
 
 <!-- ================= MOBILE STICKY CTA ================= -->
-<div
-  class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow p-3"
->
+<div class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow p-3">
   <button
     type="submit"
-    formmethod="post"
-    formaction="{% url 'orders:create_order' %}"
-    formnovalidate
-    class="w-full bg-black text-white py-3 rounded-xl font-semibold min-h-[48px]"
-    onclick="this.disabled=true; this.innerText='Processing…'; this.closest('form')?.submit();"
+    form="checkout-form"
+    class="w-full bg-black text-white py-3 rounded-xl font-semibold"
   >
-    Pay ₹{{ cart_total }}
+    Place Order • ₹{{ cart_total }}
   </button>
 </div>
 

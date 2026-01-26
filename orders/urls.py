@@ -5,27 +5,68 @@ app_name = "orders"
 
 urlpatterns = [
 
-    # ========================
-    # CHECKOUT & ORDER CREATE
-    # ========================
-    path("checkout/", views.checkout, name="checkout"),
-    path("create/", views.create_order, name="create_order"),
+    # ==================================================
+    # CHECKOUT & ORDER CREATION
+    # ==================================================
+    path(
+        "checkout/",
+        views.checkout,
+        name="checkout",
+    ),
+    path(
+        "create/",
+        views.create_order,
+        name="create_order",
+    ),
 
-    # ========================
-    # PAYMENT FLOW (RAZORPAY)
-    # ========================
-    path("payment/<uuid:order_id>/", views.payment, name="payment"),
-    path("payment/failed/<uuid:order_id>/", views.payment_failed, name="payment_failed"),
+    # ==================================================
+    # PAYMENT FLOW (STRIPE)
+    # ==================================================
+    path(
+        "payment/<uuid:order_id>/",
+        views.payment,
+        name="payment",
+    ),
+    path(
+        "payment/failed/<uuid:order_id>/",
+        views.payment_failed,
+        name="payment_failed",
+    ),
 
-    # ========================
-    # ORDER RESULT
-    # ========================
-    path("success/<uuid:order_id>/", views.order_success, name="order_success"),
-    path("my-orders/", views.my_orders, name="my_orders"),
-    path("order/<uuid:order_id>/", views.order_detail, name="order_detail"),
+    # ==================================================
+    # ORDER RESULTS & HISTORY
+    # ==================================================
+    path(
+        "success/<uuid:order_id>/",
+        views.order_success,
+        name="order_success",
+    ),
+    path(
+        "my-orders/",
+        views.my_orders,
+        name="my_orders",
+    ),
+    path(
+        "order/<uuid:order_id>/",
+        views.order_detail,
+        name="order_detail",
+    ),
 
-    # ========================
-    # RAZORPAY WEBHOOK (SOURCE OF TRUTH)
-    # ========================
-    path("webhooks/razorpay/", views.razorpay_webhook, name="razorpay_webhook"),
+    # ==================================================
+    # ORDER LIFECYCLE ACTIONS (USER-SAFE)
+    # ==================================================
+    path(
+        "order/<uuid:order_id>/cancel/",
+        views.cancel_order,
+        name="cancel_order",
+    ),
+
+    # ==================================================
+    # WEBHOOKS (NON-USER FACING)
+    # ==================================================
+    path(
+        "webhooks/stripe/",
+        views.stripe_webhook,
+        name="stripe_webhook",
+    ),
 ]

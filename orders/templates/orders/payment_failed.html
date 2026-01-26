@@ -1,38 +1,75 @@
 {% extends "base.html" %}
-{% block title %}Payment Failed | ClawStory{% endblock %}
+
+{% block title %}Payment Issue | ClawStory{% endblock %}
+{% block meta_description %}
+There was an issue with your payment on ClawStory. Review your order or retry securely.
+{% endblock %}
 
 {% block content %}
-
-<!-- SEO -->
-<meta name="description" content="Payment failed on ClawStory. Retry payment securely or review your order details.">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
 <div class="min-h-[80vh] flex items-center justify-center bg-gray-100 px-3 sm:px-4">
 
   <div class="max-w-xl w-full bg-white rounded-3xl shadow-xl p-6 sm:p-8 md:p-10 text-center">
 
     <!-- ================= ICON ================= -->
     <div
-      class="mx-auto w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-full bg-red-100 text-red-600 mb-6"
+      class="mx-auto w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-full mb-6
+      {% if order.status == 'REFUNDED' %}
+        bg-purple-100 text-purple-600
+      {% elif order.status in 'PAYMENT_FAILED CANCELLED' %}
+        bg-red-100 text-red-600
+      {% elif order.status == 'CANCEL_REQUESTED' %}
+        bg-orange-100 text-orange-600
+      {% else %}
+        bg-yellow-100 text-yellow-600
+      {% endif %}
+      "
       aria-hidden="true"
     >
-      ✕
+      {% if order.status == 'REFUNDED' %}
+        ↺
+      {% elif order.status in 'PAYMENT_FAILED CANCELLED' %}
+        ✕
+      {% elif order.status == 'CANCEL_REQUESTED' %}
+        ⏸
+      {% else %}
+        ⏳
+      {% endif %}
     </div>
 
     <!-- ================= TITLE ================= -->
     <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2">
-      Payment Failed
+      {% if order.status == 'REFUNDED' %}
+        Payment Refunded
+      {% elif order.status == 'PAYMENT_FAILED' %}
+        Payment Failed
+      {% elif order.status == 'CANCEL_REQUESTED' %}
+        Cancellation Requested
+      {% elif order.status == 'CANCELLED' %}
+        Order Cancelled
+      {% else %}
+        Payment Pending
+      {% endif %}
     </h1>
 
     <p class="text-gray-600 mb-6 text-sm sm:text-base">
-      Your order is safe, but the payment could not be completed.
+      {% if order.status == 'PAYMENT_FAILED' %}
+        Your order is safe, but the payment could not be completed.
+      {% elif order.status == 'REFUNDED' %}
+        Your payment has been refunded to the original method.
+      {% elif order.status == 'CANCEL_REQUESTED' %}
+        Your cancellation request is being processed.
+      {% elif order.status == 'CANCELLED' %}
+        This order is no longer active.
+      {% else %}
+        We’re waiting for payment confirmation.
+      {% endif %}
     </p>
 
     <!-- ================= ORDER INFO ================= -->
     <div class="bg-gray-50 rounded-2xl p-4 sm:p-5 mb-6 text-left text-sm space-y-2">
       <p class="flex justify-between gap-4">
         <span class="text-gray-500">Order ID</span>
-        <strong class="break-all">#{{ order.id }}</strong>
+        <strong>{{ order.order_number }}</strong>
       </p>
 
       <p class="flex justify-between gap-4">
@@ -41,9 +78,19 @@
       </p>
 
       <p class="flex justify-between gap-4">
-        <span class="text-gray-500">Payment Status</span>
-        <strong class="text-red-600">
-          Failed
+        <span class="text-gray-500">Current Status</span>
+        <strong class="
+          {% if order.status in 'PAYMENT_FAILED CANCELLED' %}
+            text-red-600
+          {% elif order.status == 'REFUNDED' %}
+            text-purple-600
+          {% elif order.status == 'CANCEL_REQUESTED' %}
+            text-orange-600
+          {% else %}
+            text-yellow-600
+          {% endif %}
+        ">
+          {{ order.get_status_display }}
         </strong>
       </p>
     </div>
@@ -51,16 +98,28 @@
     <!-- ================= INFO ================= -->
     <div class="bg-gray-50 rounded-2xl p-4 sm:p-5 mb-6 text-left text-sm text-gray-700">
       <ul class="space-y-2">
-        <li>• No successful payment was recorded</li>
-        <li>• Your order has not been cancelled</li>
-        <li>• You can retry payment if the session is still valid</li>
+        {% if order.status == 'PAYMENT_FAILED' %}
+          <li>• No successful payment was recorded</li>
+          <li>• Your order is still active</li>
+          <li>• You may retry payment if available</li>
+        {% elif order.status == 'REFUNDED' %}
+          <li>• Payment was successfully refunded</li>
+          <li>• Refund will reflect as per bank timelines</li>
+        {% elif order.status == 'CANCEL_REQUESTED' %}
+          <li>• Cancellation is under review</li>
+          <li>• You will be notified once completed</li>
+        {% elif order.status == 'CANCELLED' %}
+          <li>• This order has been cancelled</li>
+        {% else %}
+          <li>• Payment is still pending confirmation</li>
+        {% endif %}
       </ul>
     </div>
 
     <!-- ================= ACTIONS ================= -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6">
 
-      {% if order.payment_status != "SUCCESS" and order.payment_expires_at and order.payment_expires_at > now %}
+      {% if order.status == "PAYMENT_PENDING" %}
       <a
         href="{% url 'orders:payment' order.id %}"
         class="block bg-black text-white py-3 rounded-xl font-semibold hover:bg-gray-900 transition min-h-[48px]"
@@ -82,7 +141,7 @@
     <div class="text-sm text-gray-500 space-y-2">
       <p>
         Need help?
-        <a href="#" class="text-blue-600 hover:underline">
+        <a href="{% url 'pages:contact' %}" class="text-blue-600 hover:underline">
           Contact Support
         </a>
       </p>
@@ -97,5 +156,4 @@
   </div>
 
 </div>
-
 {% endblock %}

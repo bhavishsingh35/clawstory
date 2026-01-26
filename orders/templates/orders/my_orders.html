@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% block title %}My Orders | ClawStory{% endblock %}
 
+{% block meta_description %}
+View and track your orders at ClawStory. Check order status, items, and delivery updates.
+{% endblock %}
+
 {% block content %}
 <div class="max-w-7xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
 
@@ -18,7 +22,7 @@
       <div class="p-4 sm:p-6 border-b flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div>
           <p class="font-semibold text-sm sm:text-lg break-all">
-            Order #{{ order.id }}
+            Order #{{ order.order_number }}
           </p>
           <p class="text-xs sm:text-sm text-gray-500">
             {{ order.created_at|date:"d M Y, h:i A" }}
@@ -26,17 +30,23 @@
         </div>
 
         <span
-          class="self-start sm:self-auto px-3 py-1 rounded-full text-xs sm:text-sm font-medium
-          {% if order.status == 'PAID' %}
+          class="px-3 py-1 rounded-full text-xs sm:text-sm font-medium
+          {% if order.status == 'DELIVERED' %}
             bg-green-100 text-green-700
-          {% elif order.status == 'FAILED' or order.status == 'CANCELLED' %}
-            bg-red-100 text-red-700
+          {% elif order.status == 'SHIPPED' %}
+            bg-blue-100 text-blue-700
+          {% elif order.status == 'PROCESSING' or order.status == 'PAID' %}
+            bg-green-100 text-green-700
           {% elif order.status == 'PAYMENT_PENDING' %}
             bg-yellow-100 text-yellow-700
+          {% elif order.status == 'PAYMENT_FAILED' or order.status == 'CANCELLED' %}
+            bg-red-100 text-red-700
+          {% elif order.status == 'REFUNDED' %}
+            bg-purple-100 text-purple-700
           {% else %}
-            bg-blue-100 text-blue-700
-          {% endif %}"
-        >
+            bg-gray-100 text-gray-700
+          {% endif %}
+        ">
           {{ order.get_status_display }}
         </span>
       </div>
@@ -50,13 +60,35 @@
             Items
           </p>
 
-          <ul class="space-y-2 text-sm">
+          <ul class="space-y-3 text-sm">
             {% for item in order.items.all %}
-            <li class="flex justify-between gap-4">
-              <span class="line-clamp-1">
-                {{ item.quantity }} × {{ item.product_name }}
+            <li class="flex gap-3">
+
+              {% if item.product_image %}
+              <img
+                src="{{ item.product_image }}"
+                alt="{{ item.product_name }}"
+                class="w-12 h-12 object-cover rounded-lg border"
+                loading="lazy"
+              >
+              {% else %}
+              <div class="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] text-gray-400">
+                No image
+              </div>
+              {% endif %}
+
+              <div class="flex-1">
+                <p class="line-clamp-1 font-medium">
+                  {{ item.product_name }}
+                </p>
+                <p class="text-xs text-gray-500">
+                  Qty: {{ item.quantity }}
+                </p>
+              </div>
+
+              <span class="font-medium whitespace-nowrap">
+                ₹{{ item.line_total|floatformat:2 }}
               </span>
-              <span>₹{{ item.subtotal }}</span>
             </li>
             {% endfor %}
           </ul>
@@ -66,7 +98,7 @@
         <div class="bg-gray-50 p-4 rounded-xl text-sm space-y-2">
           <p class="flex justify-between">
             <span>Subtotal</span>
-            <strong>₹{{ order.subtotal }}</strong>
+            <strong>₹{{ order.subtotal|floatformat:2 }}</strong>
           </p>
 
           <p class="flex justify-between">
@@ -76,24 +108,13 @@
 
           <p class="flex justify-between font-semibold">
             <span>Total</span>
-            <span>₹{{ order.total_amount }}</span>
+            <span>₹{{ order.total_amount|floatformat:2 }}</span>
           </p>
 
           <p class="flex justify-between">
-            <span>Payment</span>
-            <span>{{ order.get_payment_method_display }}</span>
-          </p>
-
-          <p class="flex justify-between">
-            <span>Payment Status</span>
+            <span>Status</span>
             <span class="font-medium">
-              {% if order.payment_status == "SUCCESS" %}
-                Paid
-              {% elif order.payment_status == "FAILED" %}
-                Failed
-              {% else %}
-                Pending
-              {% endif %}
+              {{ order.get_status_display }}
             </span>
           </p>
         </div>
@@ -103,7 +124,7 @@
       <!-- ================= ACTIONS ================= -->
       <div class="px-4 sm:px-6 py-4 border-t flex flex-wrap gap-3 text-sm">
 
-        {% if order.payment_status == "PENDING" %}
+        {% if order.status == "PAYMENT_PENDING" %}
         <a
           href="{% url 'orders:payment' order.id %}"
           class="px-4 py-2 bg-black text-white rounded-lg min-h-[40px]"
@@ -133,7 +154,7 @@
       You haven’t placed any orders yet.
     </p>
     <a
-      href="/"
+      href="{% url 'pages:shop' %}"
       class="inline-block px-6 py-3 bg-black text-white rounded-xl"
     >
       Start Shopping

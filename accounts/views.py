@@ -1,84 +1,129 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import login, logout
 from django.contrib import messages
-from .forms import SignupForm, LoginForm
-from django.contrib.auth.models import User
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
-from orders.models import Order
 from django.db.models import Sum
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.conf import settings
+from django.contrib.auth.views import PasswordResetView
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.conf import settings
 
+from .forms import SignupForm, LoginForm
+from orders.models import Order
+
+
+# ==================================================
 # SIGNUP
-from django.contrib import messages
-from .forms import SignupForm
-
+# ==================================================
 @never_cache
 def signup_view(request):
-     if request.user.is_authenticated:
+    if request.user.is_authenticated:
         return redirect("accounts:dashboard")
-    
-     form = SignupForm(request.POST or None)
 
-     if request.method == "POST":
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.email = form.cleaned_data["email"]
-            user.save()
+    form = SignupForm(request.POST or None)
 
-            messages.success(request, "Account created successfully. Please login.")
-            return redirect("accounts:login")
-     else:
-        form = SignupForm()
+    if request.method == "POST" and form.is_valid():
+        form.save()  # form handles normalization safely
 
-     return render(request, "accounts/signup.html", {"form": form})
+        messages.success(
+            request,
+            "Account created successfully. Please login."
+        )
+        return redirect("accounts:login")
 
-# LOGIN
+    return render(
+        request,
+        "accounts/signup.html",
+        {"form": form},
+    )
+
+
+# ==================================================
+# LOGIN (SAFE REDIRECT + SINGLE SOURCE AUTH)
+# ==================================================
 @never_cache
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect("accounts:dashboard")   # IMPORTANT
+        return redirect("accounts:dashboard")
 
     form = LoginForm(request.POST or None)
+    next_url = request.GET.get("next")
 
-    if request.method == "POST":
-        if form.is_valid():
-            user = authenticate(
-                request,
-                username=form.cleaned_data["username"],
-                password=form.cleaned_data["password"],
-            )
-            if user:
-                login(request, user)
-                return redirect("accounts:dashboard")
-            else:
-                messages.error(request, "Wrong username or password")
+    if request.method == "POST" and form.is_valid():
+        user = form.get_user()
+        login(request, user)
 
-    return render(request,"accounts/login.html",{"form":form})
-         
+        # Safe redirect (prevents open redirect attacks)
+        if next_url and url_has_allowed_host_and_scheme(
+            next_url,
+            allowed_hosts={request.get_host()},
+            require_https=request.is_secure(),
+        ):
+            return redirect(next_url)
 
-# LOGOUT
-# def logout_view(request):
-#     logout(request)
-#     return redirect("accounts:login")
+        return redirect("accounts:dashboard")
 
+    return render(
+        request,
+        "accounts/login.html",
+        {
+            "form": form,
+            "next": next_url,
+        },
+    )
+
+
+# ==================================================
+# LOGOUT (CSRF SAFE)
+# ==================================================
+@login_required
+def logout_view(request):
+    logout(request)
+    messages.success(request, "You have been logged out.")
+    return redirect("pages:home")
+
+
+# ==================================================
+# DASHBOARD (PAID ORDERS ONLY)
+# ==================================================
 @never_cache
 @login_required
 def dashboard(request):
     user = request.user
 
-    orders = Order.objects.filter(user=user).prefetch_related("items")
+    orders = (
+        Order.objects
+        .filter(
+            user=user,
+            status=Order.PAID,  # ✅ FIXED
+        )
+        .prefetch_related("items")
+        .order_by("-created_at")
+    )
 
-    total_spent = orders.aggregate(
-        total=Sum("total")
-    )["total"] or 0
-
-    total_orders = orders.count()
+    aggregates = orders.aggregate(
+        total_spent=Sum("total_amount"),
+    )
 
     context = {
         "user": user,
         "orders": orders,
-        "total_spent": total_spent,
-        "total_orders": total_orders,
+        "total_spent": aggregates["total_spent"] or 0,
+        "total_orders": orders.count(),
     }
 
-    return render(request, "accounts/dashboard.html", context)
+    return render(
+        request,
+        "accounts/dashboard.html",
+        context,
+    )
+
+
+class HTMLPasswordResetView(PasswordResetView):
+    template_name = "accounts/forgot_password.html"
+    email_template_name = "accounts/password_reset_email.html"
+    html_email_template_name = "accounts/password_reset_email.html"
+    subject_template_name = "accounts/password_reset_subject.txt"

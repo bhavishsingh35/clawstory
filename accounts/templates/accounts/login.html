@@ -1,96 +1,111 @@
-{% extends "base.html" %}
+{% extends "auth_base.html" %}
 {% block title %}Login | ClawStory{% endblock %}
 
+{% block heading %}Welcome Back{% endblock %}
+{% block subheading %}
+Login to continue shopping on <span class="font-semibold">ClawStory</span>
+{% endblock %}
+
 {% block content %}
-<section class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
 
-  <div class="w-full max-w-md bg-white rounded-xl shadow-lg border p-6 sm:p-8">
-
-    <!-- LOGO / BRAND -->
-    <div class="text-center mb-6">
-      <h1 class="text-2xl font-bold tracking-tight">Welcome Back</h1>
-      <p class="text-sm text-gray-500 mt-1">
-        Login to continue shopping on <span class="font-semibold">ClawStory</span>
-      </p>
+  <!-- ================= FORM ERRORS ================= -->
+  {% if form.non_field_errors %}
+    <div class="mb-4 text-sm px-3 py-2 rounded-md
+                bg-red-900/30 text-red-400 border border-red-800">
+      {{ form.non_field_errors }}
     </div>
+  {% endif %}
 
-    <!-- ERROR / INFO MESSAGES -->
-    {% if messages %}
-      {% for message in messages %}
-        <div class="mb-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
-          {{ message }}
-        </div>
-      {% endfor %}
+  <!-- ================= LOGIN FORM ================= -->
+  <form method="post" class="space-y-4" novalidate>
+    {% csrf_token %}
+
+    {% if next %}
+      <input type="hidden" name="next" value="{{ next }}">
     {% endif %}
 
-    <!-- LOGIN FORM -->
-    <form method="post" class="space-y-4" novalidate>
-      {% csrf_token %}
-
-      <!-- USERNAME / EMAIL -->
-      <div>
-        <label class="block text-sm font-medium mb-1">Username or Email</label>
-        <input
-          type="text"
-          name="username"
-          required
-          autocomplete="username"
-          class="w-full rounded-md border px-3 py-2 focus:ring-2 focus:ring-black focus:outline-none"
-        >
-      </div>
-
-      <!-- PASSWORD -->
-      <div>
-        <label class="block text-sm font-medium mb-1">Password</label>
-        <input
-          type="password"
-          name="password"
-          required
-          autocomplete="current-password"
-          class="w-full rounded-md border px-3 py-2 focus:ring-2 focus:ring-black focus:outline-none"
-        >
-      </div>
-
-      <!-- FORGOT PASSWORD -->
-      <div class="text-right">
-        <a href="{% url 'accounts:forgot_password' %}" class="text-sm text-blue-600 hover:underline">
-          Forgot password?
-        </a>
-      </div>
-
-      <!-- SUBMIT -->
-      <button
-        type="submit"
-        class="w-full bg-black text-white py-2.5 rounded-md font-semibold hover:bg-gray-900 transition"
+    <!-- USERNAME / EMAIL -->
+    <div>
+      <label for="id_username"
+             class="block text-sm font-medium mb-1 text-gray-300">
+        Username or Email
+      </label>
+      <input
+        type="text"
+        id="id_username"
+        name="username"
+        required
+        autocomplete="username"
+        placeholder="Username or Email"
+        class="w-full rounded-md bg-[#1a1a1a] border border-gray-700
+               px-3 py-2 text-white placeholder-gray-500
+               focus:ring-2 focus:ring-[#c7b27c] focus:outline-none"
       >
-        Login
-      </button>
-
-    </form>
-
-    <!-- DIVIDER -->
-    <div class="flex items-center my-6">
-      <div class="flex-1 h-px bg-gray-200"></div>
-      <span class="px-3 text-xs text-gray-400">NEW TO CLAWSTORY?</span>
-      <div class="flex-1 h-px bg-gray-200"></div>
     </div>
 
-    <!-- SIGNUP -->
-    <a
-      href="{% url 'accounts:signup' %}"
-      class="block w-full text-center border py-2.5 rounded-md font-semibold hover:bg-gray-50 transition"
+    <!-- PASSWORD -->
+    <div>
+      <label for="id_password"
+             class="block text-sm font-medium mb-1 text-gray-300">
+        Password
+      </label>
+      <input
+        type="password"
+        id="id_password"
+        name="password"
+        required
+        autocomplete="current-password"
+        class="w-full rounded-md bg-[#1a1a1a] border border-gray-700
+               px-3 py-2 text-white
+               focus:ring-2 focus:ring-[#c7b27c] focus:outline-none"
+      >
+    </div>
+
+    <!-- FORGOT PASSWORD -->
+    <div class="text-right">
+      <a
+        href="{% url 'accounts:forgot_password' %}"
+        class="text-sm text-[#c7b27c] hover:underline"
+      >
+        Forgot password?
+      </a>
+    </div>
+
+    <!-- SUBMIT -->
+    <button
+      type="submit"
+      class="w-full bg-[#c7b27c] text-black py-2.5 rounded-md
+             font-semibold hover:bg-[#bfa764]
+             transition min-h-[44px]"
     >
-      Create your account
-    </a>
+      Login
+    </button>
+  </form>
 
-    <!-- TRUST -->
-    <p class="mt-6 text-xs text-gray-500 text-center leading-relaxed">
-      By continuing, you agree to ClawStory’s
-      <a href="#" class="underline">Terms</a> &
-      <a href="#" class="underline">Privacy Policy</a>.
-    </p>
-
+  <!-- ================= DIVIDER ================= -->
+  <div class="flex items-center my-6">
+    <div class="flex-1 h-px bg-gray-700"></div>
+    <span class="px-3 text-xs text-gray-500">
+      NEW TO CLAWSTORY?
+    </span>
+    <div class="flex-1 h-px bg-gray-700"></div>
   </div>
 
-</section>
+  <!-- ================= SIGNUP ================= -->
+  <a
+    href="{% url 'accounts:signup' %}"
+    class="block w-full text-center border border-gray-700
+           py-2.5 rounded-md font-semibold
+           hover:bg-[#1a1a1a] transition text-gray-200"
+  >
+    Create your account
+  </a>
+
+  <!-- ================= TRUST ================= -->
+  <p class="mt-6 text-xs text-gray-500 text-center leading-relaxed">
+    By continuing, you agree to ClawStory’s
+    <a href="#" class="underline">Terms</a> &
+    <a href="#" class="underline">Privacy Policy</a>.
+  </p>
+
 {% endblock %}

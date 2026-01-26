@@ -1,45 +1,30 @@
 {% extends "base.html" %}
+
 {% block title %}Complete Payment | ClawStory{% endblock %}
+{% block meta_description %}
+Secure online payment for your ClawStory order using Stripe.
+{% endblock %}
 
 {% block content %}
-
-<!-- SEO -->
-<meta name="description" content="Secure payment for your ClawStory order">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
 <div class="min-h-[80vh] flex items-center justify-center bg-gray-100 px-3 sm:px-4">
 
-  <div
-    id="payment-container"
-    class="w-full max-w-lg bg-white rounded-3xl shadow-xl p-6 sm:p-8 text-center"
-
-    data-expiry-seconds="{{ remaining_seconds }}"
-    data-fail-url="{% url 'orders:payment_failed' order.id %}"
-    data-success-url="{% url 'orders:order_success' order.id %}"
-
-    data-key="{{ razorpay_key }}"
-    data-order-id="{{ razorpay_order_id }}"
-    data-amount="{{ razorpay_amount }}"
-
-    data-name="{{ order.full_name }}"
-    data-phone="{{ order.phone }}"
-  >
+  <div class="w-full max-w-lg bg-white rounded-3xl shadow-xl p-6 sm:p-8">
 
     <!-- ================= HEADER ================= -->
-    <h1 class="text-xl sm:text-2xl font-extrabold mb-1">
-      Complete Payment
-    </h1>
-    <p class="text-sm text-gray-500 mb-6">
-      Secure Razorpay transaction
-    </p>
+    <div class="text-center mb-6">
+      <h1 class="text-xl sm:text-2xl font-extrabold">
+        Complete Payment
+      </h1>
+      <p class="text-sm text-gray-500 mt-1">
+        Secure payment powered by Stripe
+      </p>
+    </div>
 
     <!-- ================= ORDER INFO ================= -->
-    <div class="bg-gray-50 rounded-2xl p-4 sm:p-5 mb-6 text-left text-sm">
+    <div class="bg-gray-50 rounded-2xl p-4 sm:p-5 mb-6 text-sm">
       <div class="flex justify-between mb-2 gap-4">
-        <span class="text-gray-500">Order ID</span>
-        <span class="font-semibold break-all">
-          #{{ order.id }}
-        </span>
+        <span class="text-gray-500">Order</span>
+        <span class="font-semibold">{{ order.order_number }}</span>
       </div>
 
       <div class="flex justify-between mb-2">
@@ -51,124 +36,83 @@
 
       <div class="flex justify-between">
         <span class="text-gray-500">Payment Method</span>
-        <span class="font-semibold">Online</span>
+        <span class="font-semibold">UPI / Cards / Wallets</span>
       </div>
     </div>
 
-    <!-- ================= TIMER ================= -->
-    <div class="mb-6">
-      <p class="text-sm text-gray-600 mb-1">
-        Time remaining
-      </p>
-      <p
-        id="timer"
-        class="text-2xl font-bold text-red-600 tabular-nums"
+    <!-- ================= STRIPE FORM ================= -->
+    <form id="payment-form" class="space-y-4">
+      <div id="payment-element" class="p-3 border rounded-xl bg-white"></div>
+
+      <button
+        id="submit"
+        type="submit"
+        class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition min-h-[48px]"
       >
-        --:--
-      </p>
-    </div>
+        <span id="button-text">Pay Securely</span>
+      </button>
 
-    <!-- ================= PAY CTA ================= -->
-    <button
-      id="pay-btn"
-      class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition min-h-[48px]"
-    >
-      Pay Securely
-    </button>
-
-    <!-- ================= EXPIRED ================= -->
-    <button
-      id="expired-btn"
-      class="hidden w-full bg-gray-400 text-white py-3 rounded-xl font-semibold mt-3 cursor-not-allowed min-h-[48px]"
-      disabled
-    >
-      Payment Session Expired
-    </button>
+      <p
+        id="payment-message"
+        class="hidden text-sm text-red-600 text-center"
+      ></p>
+    </form>
 
     <!-- ================= TRUST ================= -->
-    <div class="mt-6 text-xs text-gray-500 space-y-1">
-      <p>🔒 PCI-DSS compliant</p>
-      <p>💳 UPI, Cards, NetBanking</p>
-      <p>↩ Automatic refunds on failure</p>
+    <div class="mt-6 text-xs text-gray-500 text-center space-y-1">
+      <p>🔒 PCI-DSS compliant payments</p>
+      <p>💳 Powered by Stripe</p>
+      <p>📩 Confirmation via email after payment</p>
     </div>
 
   </div>
 
 </div>
 
-<!-- Razorpay SDK (non-blocking) -->
-<!-- Razorpay SDK -->
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<!-- ================= STRIPE ================= -->
+<script src="https://js.stripe.com/v3/"></script>
 
 <script>
 (function () {
-  const container = document.getElementById("payment-container");
-  if (!container || typeof Razorpay === "undefined") {
-    console.error("Razorpay SDK not loaded");
-    return;
-  }
+  const stripe = Stripe("{{ stripe_public_key }}");
+  const clientSecret = "{{ client_secret }}";
 
-  const expirySeconds = parseInt(container.dataset.expirySeconds, 10);
-  const failUrl = container.dataset.failUrl;
-  const successUrl = container.dataset.successUrl;
-
-  const key = container.dataset.key;
-  const orderId = container.dataset.orderId;
-  const amount = parseInt(container.dataset.amount, 10);
-
-  const name = container.dataset.name;
-  const phone = container.dataset.phone;
-
-  const payBtn = document.getElementById("pay-btn");
-  const expiredBtn = document.getElementById("expired-btn");
-  const timerEl = document.getElementById("timer");
-
-  let seconds = expirySeconds;
-  let expired = false;
-  let locked = false;
-
-  function tick() {
-    if (seconds <= 0) {
-      expired = true;
-      payBtn.classList.add("hidden");
-      expiredBtn.classList.remove("hidden");
-      return;
-    }
-    timerEl.textContent =
-      Math.floor(seconds / 60) + ":" + String(seconds % 60).padStart(2, "0");
-    seconds--;
-    setTimeout(tick, 1000);
-  }
-  tick();
-
-  const rzp = new Razorpay({
-    key: key,
-    order_id: orderId,
-    amount: amount,
-    currency: "INR",
-    name: "ClawStory",
-    description: "Order Payment",
-    prefill: { name, contact: phone },
-    handler: function () {
-      window.location.replace(successUrl);
-    },
-    modal: {
-      ondismiss: function () {
-        if (!expired) window.location.replace(failUrl);
-      }
-    },
-    theme: { color: "#16a34a" }
+  const elements = stripe.elements({
+    clientSecret: clientSecret,
+    appearance: { theme: "stripe" },
   });
 
-  payBtn.addEventListener("click", function (e) {
+  const paymentElement = elements.create("payment");
+  paymentElement.mount("#payment-element");
+
+  const form = document.getElementById("payment-form");
+  const submitButton = document.getElementById("submit");
+  const buttonText = document.getElementById("button-text");
+  const message = document.getElementById("payment-message");
+
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (expired || locked) return;
-    locked = true;
-    payBtn.textContent = "Opening Payment…";
-    rzp.open();
+
+    submitButton.disabled = true;
+    buttonText.textContent = "Processing…";
+    message.classList.add("hidden");
+
+    const { error } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: "{{ request.scheme }}://{{ request.get_host }}{% url 'orders:order_success' order.id %}",
+      },
+    });
+
+    if (error) {
+      message.textContent =
+        error.message || "Payment failed. Please try again.";
+      message.classList.remove("hidden");
+      submitButton.disabled = false;
+      buttonText.textContent = "Pay Securely";
+    }
   });
 })();
 </script>
-
 
 {% endblock %}

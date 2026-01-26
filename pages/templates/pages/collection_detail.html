@@ -1,22 +1,24 @@
 {% extends "base.html" %}
 
-{% block title %}{{ collection.name }} | The Claw Story{% endblock %}
+{% block title %}{{ collection.name }} | The ClawStory{% endblock %}
 
-{% block extra_head %}
-<meta
-  name="description"
-  content="Shop {{ collection.name }} collection at The Claw Story. Premium fashion curated for modern style."
-/>
-{% endblock %}
+{% block meta_description %}Shop {{ collection.name }} collection at The ClawStory. Premium fashion curated for modern style and comfort.{% endblock %}
 
 {% block content %}
-<section class="max-w-7xl mx-auto px-4 py-10">
+<div class="-mx-4 -my-10 px-4 py-12 bg-[#1a1a1a]">
 
-  <!-- COLLECTION HEADER -->
-  <header class="mb-8">
-    <h1 class="text-3xl font-bold">{{ collection.name }}</h1>
-    <p class="text-gray-600 mt-1">
-      {{ products.count }} products available
+<section class="max-w-7xl mx-auto" aria-labelledby="collection-heading">
+
+  <!-- =====================================================
+       COLLECTION HEADER
+  ====================================================== -->
+  <header class="mb-10">
+    <h1 id="collection-heading"
+        class="text-3xl md:text-4xl font-extrabold text-white tracking-wide">
+      {{ collection.name }}
+    </h1>
+    <p class="text-gray-400 mt-1">
+      {{ products.paginator.count }} products available
     </p>
   </header>
 
@@ -25,44 +27,56 @@
 
     {% for product in products %}
     <article
-      class="border rounded-lg bg-white hover:shadow-lg transition overflow-hidden flex flex-col"
+      class="bg-white rounded-xl shadow-sm hover:shadow-lg transition overflow-hidden flex flex-col"
       itemscope
       itemtype="https://schema.org/Product"
     >
 
-      <!-- PRODUCT IMAGE -->
-      <a href="{% url 'pages:product_detail' product.slug %}">
-        <div class="relative w-full aspect-[3/4] bg-gray-100 overflow-hidden rounded-t-lg">
-          {% if product.image %}
-          <img
-            src="{{ product.image.url }}"
-            alt="{{ product.name }}"
-            loading="lazy"
-            class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-            itemprop="image"
-          />
+      <!-- =====================================================
+           PRODUCT IMAGE
+      ====================================================== -->
+      <a
+        href="{% url 'pages:product_detail' product.collection.slug product.slug %}"
+        aria-label="View {{ product.name }}"
+      >
+        <div class="relative aspect-[3/4] bg-gray-100 overflow-hidden rounded-t-xl">
+          {% if product.image_url %}
+            <img
+              src="{{ product.image_url }}"
+              alt="{{ product.name }}"
+              loading="lazy"
+              width="600"
+              height="800"
+              class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+              itemprop="image"
+            />
           {% else %}
-          <div class="absolute inset-0 flex items-center justify-center text-gray-400 text-sm">
-            No image available
-          </div>
+            <div class="absolute inset-0 flex items-center justify-center text-gray-400 text-sm">
+              No image available
+            </div>
           {% endif %}
         </div>
       </a>
 
-      <!-- PRODUCT INFO -->
+      <!-- =====================================================
+           PRODUCT INFO
+      ====================================================== -->
       <div class="p-4 flex flex-col flex-grow">
 
-        <a href="{% url 'pages:product_detail' product.slug %}">
+        <a
+          href="{% url 'pages:product_detail' product.collection.slug product.slug %}"
+        >
           <h2
-            class="font-semibold text-gray-900 hover:underline"
+            class="font-semibold text-gray-900 hover:underline line-clamp-2"
             itemprop="name"
           >
             {{ product.name }}
           </h2>
         </a>
 
+        <!-- PRICE (Schema.org Offer) -->
         <p
-          class="text-gray-700 mt-1 text-sm font-medium"
+          class="text-gray-800 mt-1 text-sm font-medium"
           itemprop="offers"
           itemscope
           itemtype="https://schema.org/Offer"
@@ -70,17 +84,27 @@
           ₹{{ product.price }}
           <meta itemprop="priceCurrency" content="INR">
           <meta itemprop="price" content="{{ product.price }}">
+          <meta itemprop="availability"
+                content="https://schema.org/{% if product.is_in_stock %}InStock{% else %}OutOfStock{% endif %}">
         </p>
 
-        {% if product.stock > 0 %}
-          <span class="text-green-600 text-xs mt-1">In stock</span>
+        {% if product.is_in_stock %}
+          <span class="text-green-600 text-xs mt-1">
+            In stock
+          </span>
         {% else %}
-          <span class="text-red-600 text-xs mt-1">Out of stock</span>
+          <span class="text-red-600 text-xs mt-1">
+            Out of stock
+          </span>
         {% endif %}
 
         <a
-          href="{% url 'pages:product_detail' product.slug %}"
-          class="mt-auto block text-center bg-gray-900 text-white py-2 rounded-lg text-sm hover:bg-black transition"
+          href="{% url 'pages:product_detail' product.collection.slug product.slug %}"
+          class="mt-auto block text-center
+                 bg-[#111111] text-white
+                 py-2 rounded-lg text-sm
+                 hover:bg-black transition
+                 focus:outline-none focus:ring-2 focus:ring-[#111111]"
         >
           View Product
         </a>
@@ -90,9 +114,51 @@
     {% endfor %}
 
   </div>
+
+  <!-- =====================================================
+       PAGINATION
+  ====================================================== -->
+  {% if products.paginator.num_pages > 1 %}
+  <nav
+    class="flex justify-center mt-12 gap-3 text-sm"
+    aria-label="Pagination"
+  >
+
+    {% if products.has_previous %}
+      <a
+        href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page={{ products.previous_page_number }}"
+        class="px-4 py-2 rounded border border-gray-700
+               text-gray-300 hover:bg-gray-800 transition"
+        rel="prev"
+      >
+        Prev
+      </a>
+    {% endif %}
+
+    <span class="px-4 py-2 text-gray-400">
+      Page {{ products.number }} of {{ products.paginator.num_pages }}
+    </span>
+
+    {% if products.has_next %}
+      <a
+        href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page={{ products.next_page_number }}"
+        class="px-4 py-2 rounded border border-gray-700
+               text-gray-300 hover:bg-gray-800 transition"
+        rel="next"
+      >
+        Next
+      </a>
+    {% endif %}
+
+  </nav>
+  {% endif %}
+
   {% else %}
-    <p class="text-gray-500">No products in this collection.</p>
+    <p class="text-gray-400">
+      No products in this collection.
+    </p>
   {% endif %}
 
 </section>
+</div>
 {% endblock %}

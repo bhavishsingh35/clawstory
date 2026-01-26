@@ -1,22 +1,26 @@
 {% extends "base.html" %}
-{% block title %}Order #{{ order.id }} | ClawStory{% endblock %}
+
+{% block title %}Order {{ order.order_number }} | ClawStory{% endblock %}
+{% block meta_description %}
+View your ClawStory order details, items, order status, and total amount.
+{% endblock %}
 
 {% block content %}
-
-<!-- SEO -->
-<meta name="description" content="View your ClawStory order details, items, payment status, and total amount.">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
 <div class="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
 
   <!-- ================= HEADER ================= -->
   <div class="mb-6 sm:mb-8">
-    <h1 class="text-xl sm:text-3xl font-extrabold tracking-tight break-all">
-      Order #{{ order.id }}
+    <h1 class="text-xl sm:text-3xl font-extrabold tracking-tight">
+      Order {{ order.order_number }}
     </h1>
     <p class="text-xs sm:text-sm text-gray-500 mt-1">
       Placed on {{ order.created_at|date:"d M Y, h:i A" }}
     </p>
+  </div>
+
+  <!-- ================= STATUS STRIP ================= -->
+  <div class="mb-6">
+    {% include "components/order_timeline.html" %}
   </div>
 
   <!-- ================= MAIN GRID ================= -->
@@ -30,9 +34,22 @@
 
       <ul class="divide-y">
         {% for item in order.items.all %}
-        <li class="py-3 sm:py-4 flex justify-between gap-4">
+        <li class="py-4 flex gap-4">
 
-          <div class="min-w-0">
+          {% if item.product_image %}
+          <img
+            src="{{ item.product_image }}"
+            alt="{{ item.product_name }}"
+            class="w-16 h-16 object-cover rounded-lg border"
+            loading="lazy"
+          >
+          {% else %}
+          <div class="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center text-xs text-gray-400">
+            No image
+          </div>
+          {% endif %}
+
+          <div class="flex-1 min-w-0">
             <p class="font-medium text-sm sm:text-base line-clamp-2">
               {{ item.product_name }}
             </p>
@@ -42,7 +59,7 @@
           </div>
 
           <div class="font-semibold text-sm sm:text-base whitespace-nowrap">
-            ₹{{ item.subtotal|floatformat:2 }}
+            ₹{{ item.line_total|floatformat:2 }}
           </div>
 
         </li>
@@ -75,44 +92,33 @@
 
       <hr class="my-4">
 
+      <!-- ================= STATUS ================= -->
       <div class="text-sm space-y-2">
         <p class="flex justify-between">
-          <span class="text-gray-500">Payment Method</span>
-          <span class="font-medium">
-            {{ order.get_payment_method_display }}
-          </span>
-        </p>
-
-        <p class="flex justify-between">
-          <span class="text-gray-500">Payment Status</span>
+          <span class="text-gray-500">Order Status</span>
           <span class="font-medium
-            {% if order.payment_status == 'SUCCESS' %}
+            {% if order.status == 'DELIVERED' %}
               text-green-600
-            {% elif order.payment_status == 'FAILED' %}
-              text-red-600
-            {% else %}
+            {% elif order.status == 'SHIPPED' %}
+              text-blue-600
+            {% elif order.status == 'PROCESSING' or order.status == 'PAID' %}
+              text-green-600
+            {% elif order.status == 'PAYMENT_PENDING' %}
               text-yellow-600
+            {% elif order.status == 'PAYMENT_FAILED' or order.status == 'CANCELLED' %}
+              text-red-600
+            {% elif order.status == 'REFUNDED' %}
+              text-purple-600
+            {% else %}
+              text-gray-700
             {% endif %}
           ">
-            {% if order.payment_status == 'SUCCESS' %}
-              Paid
-            {% elif order.payment_status == 'FAILED' %}
-              Failed
-            {% else %}
-              Pending
-            {% endif %}
-          </span>
-        </p>
-
-        <p class="flex justify-between">
-          <span class="text-gray-500">Order Status</span>
-          <span class="font-medium">
             {{ order.get_status_display }}
           </span>
         </p>
       </div>
 
-      {% if order.payment_status == "PENDING" %}
+      {% if order.status == "PAYMENT_PENDING" %}
       <a
         href="{% url 'orders:payment' order.id %}"
         class="block mt-6 text-center px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition min-h-[48px]"
@@ -121,8 +127,24 @@
       </a>
       {% endif %}
 
+      {% if order.status in "PAYMENT_PENDING PAID PROCESSING" %}
+      <form
+        method="post"
+        action="{% url 'orders:cancel_order' order.id %}"
+        class="mt-3"
+      >
+        {% csrf_token %}
+        <button
+          type="submit"
+          class="w-full px-6 py-3 border border-red-600 text-red-600 rounded-xl hover:bg-red-50 transition min-h-[48px]"
+        >
+          Cancel Order
+        </button>
+      </form>
+      {% endif %}
+
       <div class="mt-6 text-xs text-gray-500 space-y-2">
-        <p>🔒 Secure payments</p>
+        <p>🔒 Secure payments via Stripe</p>
         <p>📦 Reliable delivery</p>
         <p>↩ Easy returns</p>
       </div>
@@ -141,5 +163,4 @@
   </div>
 
 </div>
-
 {% endblock %}

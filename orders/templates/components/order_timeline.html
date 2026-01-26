@@ -1,0 +1,97 @@
+<div class="px-6 py-4">
+  <div class="flex justify-between gap-2 text-[10px] sm:text-xs text-gray-500">
+
+    {# ================= CREATED ================= #}
+    <div class="flex-1 text-center">
+      <div class="mx-auto w-3 h-3 rounded-full
+        {% if order.status %}
+          bg-green-600
+        {% else %}
+          bg-gray-300
+        {% endif %}
+      "></div>
+      <p class="mt-1 uppercase tracking-tight">Created</p>
+    </div>
+
+    {# ================= PAYMENT ================= #}
+    <div class="flex-1 text-center">
+      <div class="mx-auto w-3 h-3 rounded-full
+        {% if order.status in 'PAID PROCESSING SHIPPED DELIVERED' %}
+          bg-green-600
+        {% elif order.status in 'PAYMENT_FAILED CANCELLED' %}
+          bg-red-500
+        {% elif order.status == 'CANCEL_REQUESTED' %}
+          bg-orange-500
+        {% else %}
+          bg-yellow-500
+        {% endif %}
+      "></div>
+      <p class="mt-1 uppercase tracking-tight">Payment</p>
+    </div>
+
+    {# ================= CONFIRMED ================= #}
+    <div class="flex-1 text-center">
+      <div class="mx-auto w-3 h-3 rounded-full
+        {% if order.status in 'PROCESSING SHIPPED DELIVERED' %}
+          bg-green-600
+        {% elif order.status in 'CANCELLED REFUNDED' %}
+          bg-red-500
+        {% elif order.status == 'CANCEL_REQUESTED' %}
+          bg-orange-500
+        {% else %}
+          bg-gray-300
+        {% endif %}
+      "></div>
+      <p class="mt-1 uppercase tracking-tight">Confirmed</p>
+    </div>
+
+  </div>
+
+  {# ================= STATUS MESSAGE ================= #}
+  <p class="mt-3 text-center text-xs font-medium
+    {% if order.status in 'PAYMENT_FAILED CANCELLED' %}
+      text-red-600
+    {% elif order.status == 'CANCEL_REQUESTED' %}
+      text-orange-600
+    {% elif order.status == 'PAYMENT_PENDING' %}
+      text-yellow-600
+    {% elif order.status == 'REFUNDED' %}
+      text-purple-600
+    {% else %}
+      text-green-600
+    {% endif %}
+  ">
+
+    {% if order.status == 'CANCEL_REQUESTED' %}
+      Cancellation requested — processing
+
+    {% elif order.status == 'CANCELLED' %}
+      Order cancelled
+
+    {% elif order.status == 'PAYMENT_FAILED' %}
+      Payment failed — please retry
+
+    {% elif order.status == 'PAYMENT_PENDING' %}
+      Awaiting payment confirmation
+
+    {% elif order.status == 'PAID' %}
+      Payment successful — order confirmed
+
+    {% elif order.status == 'PROCESSING' %}
+      Order confirmed — being prepared
+
+    {% elif order.status == 'SHIPPED' %}
+      Order shipped
+
+    {% elif order.status == 'DELIVERED' %}
+      Order delivered
+
+    {% elif order.status == 'REFUNDED' %}
+      Order refunded
+
+    {% else %}
+      Order placed successfully
+
+    {% endif %}
+  </p>
+</div>

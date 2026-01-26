@@ -1,117 +1,211 @@
+from decimal import Decimal
+
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+
 from pages.models import Product
 
 
-# =========================
+# =====================================================
+# CART UTILS (CENTRALIZED, SAFE)
+# =====================================================
+def _get_cart(session):
+    """
+    Cart structure (SESSION ONLY, NOT SOURCE OF TRUTH):
+
+    {
+        "product_id": {
+            "qty": int,
+            "price": "decimal as string"   # snapshot for display only
+        }
+    }
+    """
+    return session.setdefault("cart", {})
+
+
+def _save_cart(session, cart):
+    session["cart"] = cart
+    session.modified = True
+
+
+# =====================================================
 # CART DETAIL
-# =========================
-@login_required
+# =====================================================
 def cart_detail(request):
-    cart = request.session.get("cart", {})
-    products = Product.objects.filter(id__in=cart.keys())
+    cart = _get_cart(request.session)
+
+    product_ids = list(cart.keys())
+    products = Product.objects.filter(
+        id__in=product_ids,
+        is_active=True
+    )
 
     cart_items = []
-    total = 0
-    updated = False  # track auto-fixes
+    total = Decimal("0.00")
+    updated = False
 
     for product in products:
         pid = str(product.id)
-        qty = cart.get(pid, 0)
+        item = cart.get(pid)
 
-        # 🔒 HARD STOCK VALIDATION
-        if product.stock == 0:
-            cart.pop(pid)
+        if not item:
+            continue
+
+        try:
+            qty = int(item.get("qty", 0))
+        except (TypeError, ValueError):
+            cart.pop(pid, None)
+            updated = True
+            continue
+
+        # Defensive cleanup
+        if qty <= 0:
+            cart.pop(pid, None)
+            updated = True
+            continue
+
+        # Clamp to available stock (best-effort)
+        if product.stock <= 0:
+            cart.pop(pid, None)
             updated = True
             continue
 
         if qty > product.stock:
             qty = product.stock
-            cart[pid] = qty
+            item["qty"] = qty
             updated = True
 
-        subtotal = product.price * qty
+        # Price is DISPLAY ONLY
+        try:
+            price = Decimal(item.get("price"))
+        except Exception:
+            price = product.price
+            item["price"] = str(product.price)
+            updated = True
+
+        subtotal = price * qty
         total += subtotal
 
         cart_items.append({
             "product": product,
             "quantity": qty,
+            "price": price,
             "subtotal": subtotal,
         })
 
     if updated:
-        request.session["cart"] = cart
+        _save_cart(request.session, cart)
 
-    return render(request, "cart/cart.html", {
-        "cart_items": cart_items,
-        "total": total,
-    })
+    return render(
+        request,
+        "cart/cart.html",
+        {
+            "cart_items": cart_items,
+            "total": total,
+        }
+    )
 
 
-# =========================
-# ADD TO CART (SAFE)
-# =========================
-@login_required
+# =====================================================
+# ADD TO CART
+# =====================================================
+@require_POST
 def cart_add(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
-    cart = request.session.get("cart", {})
+    product = get_object_or_404(
+        Product,
+        id=product_id,
+        is_active=True
+    )
+
+    cart = _get_cart(request.session)
     pid = str(product.id)
 
-    qty = int(request.POST.get("quantity", 1))
+    try:
+        qty = int(request.POST.get("qty", 1))
+    except (TypeError, ValueError):
+        qty = 1
 
-    # 🔒 STOCK ENFORCEMENT
-    if product.stock <= 0:
+    if qty <= 0:
         return redirect("cart:cart_detail")
 
-    current_qty = cart.get(pid, 0)
-    new_qty = min(current_qty + qty, product.stock)
+    # Defensive cap (prevents abuse)
+    qty = min(qty, 10)
 
-    cart[pid] = new_qty
-    request.session["cart"] = cart
+    if not product.can_fulfill(1):
+        return redirect(
+            "pages:product_detail",
+            collection_slug=product.collection.slug,
+            product_slug=product.slug,
+        )
+
+    current = cart.get(pid, {})
+    current_qty = int(current.get("qty", 0))
+
+    final_qty = min(current_qty + qty, product.stock)
+
+    cart[pid] = {
+        "qty": final_qty,
+        # Snapshot price (DISPLAY ONLY)
+        "price": str(product.price),
+    }
+
+    _save_cart(request.session, cart)
+
+    # BUY NOW shortcut
+    if request.POST.get("action") == "buy":
+        return redirect("orders:checkout")
 
     return redirect("cart:cart_detail")
 
 
-# =========================
-# REMOVE ITEM (POST ONLY)
-# =========================
-@login_required
+# =====================================================
+# REMOVE ITEM
+# =====================================================
+@require_POST
 def cart_remove(request, product_id):
-    if request.method != "POST":
-        return redirect("cart:cart_detail")
+    cart = _get_cart(request.session)
+    cart.pop(str(product_id), None)
+    _save_cart(request.session, cart)
 
-    cart = request.session.get("cart", {})
+    return redirect("cart:cart_detail")
+
+
+# =====================================================
+# UPDATE CART (INCREMENT / DECREMENT)
+# =====================================================
+@require_POST
+def cart_update(request, product_id):
+    cart = _get_cart(request.session)
     pid = str(product_id)
 
-    cart.pop(pid, None)
-    request.session["cart"] = cart
-
-    return redirect("cart:cart_detail")
-
-
-# =========================
-# UPDATE CART (+ / −)
-# =========================
-@login_required
-def cart_update(request, product_id):
-    if request.method != "POST":
+    item = cart.get(pid)
+    if not item:
         return redirect("cart:cart_detail")
 
-    cart = request.session.get("cart", {})
-    product = get_object_or_404(Product, id=product_id)
-    pid = str(product.id)
+    product = get_object_or_404(
+        Product,
+        id=product_id,
+        is_active=True
+    )
 
-    current_qty = cart.get(pid, 0)
     action = request.POST.get("action")
 
-    if action == "inc" and current_qty < product.stock:
-        cart[pid] = current_qty + 1
+    try:
+        qty = int(item.get("qty", 0))
+    except (TypeError, ValueError):
+        cart.pop(pid, None)
+        _save_cart(request.session, cart)
+        return redirect("cart:cart_detail")
+
+    if action == "inc":
+        if product.can_fulfill(qty + 1):
+            item["qty"] = qty + 1
 
     elif action == "dec":
-        if current_qty > 1:
-            cart[pid] = current_qty - 1
+        if qty > 1:
+            item["qty"] = qty - 1
         else:
             cart.pop(pid, None)
 
-    request.session["cart"] = cart
+    _save_cart(request.session, cart)
     return redirect("cart:cart_detail")

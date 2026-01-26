@@ -1,20 +1,25 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
 
-  <!-- Responsive -->
+  <!-- ================= RESPONSIVE ================= -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- SEO -->
-  <title>{% block title %}Account | ClawStory{% endblock %}</title>
-  <meta name="description" content="{% block meta_description %}Login or create an account on ClawStory to manage orders and checkout faster.{% endblock %}">
-  <meta name="robots" content="noindex, nofollow">
+  <!-- ================= SEO (AUTH PAGES) ================= -->
+  <title>{% block title %}Account | The ClawStory{% endblock %}</title>
 
-  <!-- Tailwind -->
+  <meta name="description"
+        content="{% block meta_description %}Login or create an account on The ClawStory to manage orders and checkout faster.{% endblock %}">
+
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="author" content="The ClawStory">
+
+  <!-- ================= STYLES ================= -->
+  <!-- NOTE: Replace CDN Tailwind with compiled CSS in production -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Smooth UI -->
   <style>
     html { scroll-behavior: smooth; }
   </style>
@@ -22,58 +27,79 @@
   {% block extra_head %}{% endblock %}
 </head>
 
-<body class="bg-gray-100 min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col bg-[#1a1a1a] text-[#f5f1e8]">
 
 <!-- ================= HEADER ================= -->
-<header class="bg-white shadow-sm">
+<header class="bg-[#1a1a1a] border-b border-gray-800">
   <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
 
-    <!-- Logo -->
-    <a href="{% url 'pages:home' %}" class="text-xl font-extrabold tracking-tight">
-      Claw<span class="text-blue-600">Story</span>
+    <!-- LOGO -->
+    <a href="{% url 'pages:home' %}" aria-label="The ClawStory Home">
+      <img
+        src="{% static 'images/the-clawstory-logo.png' %}"
+        alt="The ClawStory Logo"
+        width="120"
+        height="40"
+        loading="eager"
+        class="object-contain"
+      >
     </a>
 
-    <!-- Simple Nav -->
-    <nav class="text-sm">
-      <a href="{% url 'pages:home' %}" class="hover:underline">Home</a>
-    </nav>
+    <!-- BACK -->
+    <a
+      href="{% url 'pages:home' %}"
+      class="text-sm text-gray-400 hover:text-[#c7b27c] transition"
+    >
+      ← Back to Home
+    </a>
 
   </div>
 </header>
 
 <!-- ================= AUTH CONTENT ================= -->
-<main class="flex-1 flex items-center justify-center px-4 py-10">
+<main class="flex-1 flex items-center justify-center px-4 py-12">
 
-  <div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+  <div
+    class="w-full max-w-md bg-[#111111] border border-gray-800
+           rounded-2xl shadow-xl p-8"
+  >
 
-    <!-- Page Heading -->
+    <!-- ================= HEADING ================= -->
     <div class="mb-6 text-center">
-      <h1 class="text-2xl font-bold">
-        {% block heading %}Welcome to ClawStory{% endblock %}
+      <h1 class="text-2xl font-extrabold tracking-tight">
+        {% block heading %}Welcome to The ClawStory{% endblock %}
       </h1>
-      <p class="text-sm text-gray-500 mt-1">
-        {% block subheading %}{% endblock %}
-      </p>
+
+      {% block subheading %}
+        {% if block.super %}
+          <p class="text-sm text-gray-400 mt-1">
+            {{ block.super }}
+          </p>
+        {% endif %}
+      {% endblock %}
     </div>
 
-    <!-- Messages -->
+    <!-- ================= DJANGO MESSAGES ================= -->
     {% if messages %}
-      <div class="mb-4 space-y-2">
+      <div class="mb-4 space-y-2" role="alert" aria-live="polite">
         {% for message in messages %}
-          <div class="text-sm px-4 py-2 rounded
+          <div
+            class="text-sm px-4 py-2 rounded-md border
             {% if message.tags == 'error' %}
-              bg-red-100 text-red-700
+              bg-red-900/30 text-red-400 border-red-800
+            {% elif message.tags == 'warning' %}
+              bg-yellow-900/30 text-yellow-400 border-yellow-800
             {% else %}
-              bg-green-100 text-green-700
-            {% endif %}
-          ">
+              bg-green-900/30 text-green-400 border-green-800
+            {% endif %}"
+          >
             {{ message }}
           </div>
         {% endfor %}
       </div>
     {% endif %}
 
-    <!-- FORM CONTENT -->
+    <!-- ================= PAGE CONTENT ================= -->
     {% block content %}{% endblock %}
 
   </div>
@@ -82,10 +108,9 @@
 
 <!-- ================= FOOTER ================= -->
 <footer class="text-center text-xs text-gray-500 py-6">
-  © 2026 ClawStory. Secure Authentication.
+  © {% now "Y" %} The ClawStory · Secure Authentication
 </footer>
 
 {% block extra_js %}{% endblock %}
-
 </body>
 </html>

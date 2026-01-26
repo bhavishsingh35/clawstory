@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Order Status | ClawStory{% endblock %}
+{% block meta_description %}
+Check your ClawStory order status, confirmation, and next steps.
+{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center bg-gray-100 px-3 sm:px-4">
+
+  <div class="max-w-3xl w-full bg-white rounded-3xl shadow-xl p-6 sm:p-8 md:p-12 text-center">
+
+    <!-- ================= STATUS ICON ================= -->
+    <div
+      class="mx-auto w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-full mb-6
+      {% if order.status in 'PAID PROCESSING DELIVERED' %}
+        bg-green-100 text-green-600
+      {% elif order.status == 'SHIPPED' %}
+        bg-blue-100 text-blue-600
+      {% elif order.status == 'PAYMENT_PENDING' %}
+        bg-yellow-100 text-yellow-600
+      {% elif order.status in 'PAYMENT_FAILED CANCELLED' %}
+        bg-red-100 text-red-600
+      {% elif order.status == 'CANCEL_REQUESTED' %}
+        bg-orange-100 text-orange-600
+      {% elif order.status == 'REFUNDED' %}
+        bg-purple-100 text-purple-600
+      {% else %}
+        bg-gray-100 text-gray-600
+      {% endif %}
+      "
+      aria-hidden="true"
+    >
+      {% if order.status in 'PAID PROCESSING DELIVERED' %}
+        ✓
+      {% elif order.status == 'SHIPPED' %}
+        🚚
+      {% elif order.status == 'PAYMENT_PENDING' %}
+        ⏳
+      {% elif order.status == 'CANCEL_REQUESTED' %}
+        ⏸
+      {% elif order.status in 'PAYMENT_FAILED CANCELLED' %}
+        ✕
+      {% elif order.status == 'REFUNDED' %}
+        ↺
+      {% else %}
+        …
+      {% endif %}
+    </div>
+
+    <!-- ================= TITLE ================= -->
+    <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 mb-2">
+      {% if order.status == 'DELIVERED' %}
+        Order Delivered
+      {% elif order.status == 'SHIPPED' %}
+        Order Shipped
+      {% elif order.status == 'PROCESSING' %}
+        Order Processing
+      {% elif order.status == 'PAID' %}
+        Payment Successful
+      {% elif order.status == 'PAYMENT_PENDING' %}
+        Awaiting Payment
+      {% elif order.status == 'CANCEL_REQUESTED' %}
+        Cancellation Requested
+      {% elif order.status == 'PAYMENT_FAILED' %}
+        Payment Failed
+      {% elif order.status == 'REFUNDED' %}
+        Order Refunded
+      {% elif order.status == 'CANCELLED' %}
+        Order Cancelled
+      {% else %}
+        Order Placed
+      {% endif %}
+    </h1>
+
+    <p class="text-gray-600 mb-6 text-sm sm:text-base">
+      Order reference
+      <span class="font-semibold">
+        {{ order.order_number }}
+      </span>
+    </p>
+
+    <!-- ================= INFO ================= -->
+    <div class="bg-gray-50 rounded-2xl p-4 sm:p-6 mb-6 text-left">
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+        <div>
+          <p class="text-gray-500">Order Total</p>
+          <p class="font-semibold">
+            ₹{{ order.total_amount|floatformat:2 }}
+          </p>
+        </div>
+
+        <div>
+          <p class="text-gray-500">Placed On</p>
+          <p class="font-semibold">
+            {{ order.created_at|date:"d M Y, h:i A" }}
+          </p>
+        </div>
+
+        <div>
+          <p class="text-gray-500">Current Status</p>
+          <p class="font-semibold">
+            {{ order.get_status_display }}
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================= ACTIONS ================= -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
+
+      <a
+        href="{% url 'orders:order_detail' order.id %}"
+        class="block bg-black text-white py-3 rounded-xl font-medium hover:bg-gray-900 transition min-h-[48px]"
+      >
+        View Order
+      </a>
+
+      {% if order.status == "PAYMENT_PENDING" %}
+      <a
+        href="{% url 'orders:payment' order.id %}"
+        class="block bg-yellow-100 py-3 rounded-xl font-medium hover:bg-yellow-200 transition min-h-[48px]"
+      >
+        Complete Payment
+      </a>
+      {% endif %}
+
+      <a
+        href="{% url 'pages:shop' %}"
+        class="block bg-gray-100 py-3 rounded-xl font-medium hover:bg-gray-200 transition min-h-[48px]"
+      >
+        Continue Shopping
+      </a>
+
+    </div>
+
+    <!-- ================= TRUST ================= -->
+    <div class="text-xs text-gray-500 space-y-1">
+      {% if order.status == 'PROCESSING' %}
+        <p>📦 Your order is being prepared</p>
+        <p>🔔 You will receive delivery updates</p>
+      {% elif order.status == 'PAID' %}
+        <p>💳 Payment confirmed</p>
+        <p>📦 Order will be processed shortly</p>
+      {% elif order.status == 'SHIPPED' %}
+        <p>🚚 Your order is on the way</p>
+      {% elif order.status == 'DELIVERED' %}
+        <p>✅ Order delivered successfully</p>
+      {% elif order.status == 'CANCEL_REQUESTED' %}
+        <p>⏸ Cancellation is being reviewed</p>
+        <p>📩 You will be notified once completed</p>
+      {% elif order.status == 'PAYMENT_FAILED' %}
+        <p>⚠ Payment could not be completed</p>
+        <p>💳 Please retry to avoid cancellation</p>
+      {% elif order.status == 'REFUNDED' %}
+        <p>↺ Payment has been refunded</p>
+        <p>📩 Refund details sent to your email</p>
+      {% elif order.status == 'CANCELLED' %}
+        <p>❌ This order was cancelled</p>
+      {% else %}
+        <p>⏳ Order placed successfully</p>
+        <p>🔒 Secure & safe transaction</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
