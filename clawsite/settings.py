@@ -20,24 +20,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # =================================================
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
-if not SECRET_KEY:
-    raise RuntimeError("SECRET_KEY is not set")
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
-print("SECRET_KEY loaded:", bool(SECRET_KEY))
-
-# DEBUG = os.getenv("DEBUG", "False") == "True"
-DEBUG=True
-# ALLOWED_HOSTS=["*"]
-
-ALLOWED_HOSTS = os.getenv(
-    "ALLOWED_HOSTS",
-    "localhost,127.0.0.1"
-).split(",")
-
-CSRF_TRUSTED_ORIGINS = os.getenv(
-    "CSRF_TRUSTED_ORIGINS",
-    ""
-).split(",")
+ALLOWED_HOSTS = [
+    "clawstory.onrender.com",
+    ".onrender.com",
+]
+CSRF_TRUSTED_ORIGINS = [
+    "https://clawstory.onrender.com",
+]
 
 
 # =================================================
@@ -144,6 +135,9 @@ USE_TZ = True
 # =================================================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
